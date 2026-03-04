@@ -41,7 +41,6 @@ extension RFC_7519.JWT.Parse {
 }
 
 extension RFC_7519.JWT.Parse: Parser.`Protocol` {
-    public typealias ParseOutput = Output
     public typealias Failure = RFC_7519.JWT.Parse<Input>.Error
 
     @inlinable
