@@ -11,7 +11,7 @@
 //
 // ===----------------------------------------------------------------------===//
 
-public import ASCII
+public import ASCII_Serializer_Primitives
 
 extension RFC_7519 {
     /// A JSON Web Token as defined in RFC 7519

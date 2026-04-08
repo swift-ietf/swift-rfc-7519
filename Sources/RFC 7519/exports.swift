@@ -11,6 +11,6 @@
 //
 // ===----------------------------------------------------------------------===//
 
-@_exported public import ASCII
+@_exported public import ASCII_Serializer_Primitives
 @_exported public import RFC_4648
 @_exported public import Binary_Primitives
