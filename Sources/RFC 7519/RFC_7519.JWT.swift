@@ -140,13 +140,18 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     public static func serialize<Buffer: RangeReplaceableCollection>(
         ascii jwt: RFC_7519.JWT,
         into buffer: inout Buffer
-    ) where Buffer.Element == UInt8 {
-        // Use stored Base64URL-encoded values for header and payload
+    ) where Buffer.Element == Byte {
+        // Storage is [UInt8]; BSLI `append(contentsOf:)` bridges UInt8 → Byte at the
+        // boundary so we don't materialize a [Byte] copy. RFC_4648 still emits UInt8.
         buffer.append(contentsOf: jwt.headerBase64URL)
-        buffer.append(UInt8.ascii.period)
+        buffer.append(ASCII.Code.period)
         buffer.append(contentsOf: jwt.payloadBase64URL)
-        buffer.append(UInt8.ascii.period)
-        RFC_4648.Base64.URL.encode(jwt.signature, into: &buffer, padding: false)
+        buffer.append(ASCII.Code.period)
+        // RFC_4648.Base64.URL.encode requires Buffer.Element == UInt8; encode to a
+        // staging [UInt8] then bridge into the Byte-typed buffer via BSLI.
+        var signatureEncoded: [UInt8] = []
+        RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
+        buffer.append(contentsOf: signatureEncoded)
     }
 
     /// Parses a JWT from its compact serialization format (AUTHORITATIVE IMPLEMENTATION)
@@ -160,7 +165,7 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     /// ## Category Theory
     ///
     /// Parsing transformation:
-    /// - **Domain**: [UInt8] (ASCII bytes - compact JWT format)
+    /// - **Domain**: [Byte] (ASCII bytes - compact JWT format)
     /// - **Codomain**: RFC_7519.JWT (structured data)
     ///
     /// ## Example
@@ -172,35 +177,39 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     /// - Parameter bytes: The JWT as ASCII bytes in compact format
     /// - Throws: `Error` if parsing fails
     public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void = ()) throws(Error)
-    where Bytes.Element == UInt8 {
-        let byteArray = Array(bytes)
-        guard !byteArray.isEmpty else { throw Error.empty }
+    where Bytes.Element == Byte {
+        // Lift to ASCII.Code at the entry boundary: JWT compact form is strict
+        // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
+        let arr = Array<ASCII.Code>(bytes)
+        guard !arr.isEmpty else { throw Error.empty }
 
         // Find the two period separators
         var firstPeriodIndex: Int?
         var secondPeriodIndex: Int?
 
-        for (index, byte) in byteArray.enumerated() {
-            if byte == UInt8.ascii.period {
+        for (index, code) in arr.enumerated() {
+            if code == ASCII.Code.period {
                 if firstPeriodIndex == nil {
                     firstPeriodIndex = index
                 } else if secondPeriodIndex == nil {
                     secondPeriodIndex = index
                 } else {
                     // More than two periods
-                    throw Error.invalidFormat(String(decoding: byteArray, as: UTF8.self))
+                    throw Error.invalidFormat(String(decoding: arr, as: UTF8.self))
                 }
             }
         }
 
         guard let first = firstPeriodIndex, let second = secondPeriodIndex else {
-            throw Error.invalidFormat(String(decoding: byteArray, as: UTF8.self))
+            throw Error.invalidFormat(String(decoding: arr, as: UTF8.self))
         }
 
-        // Extract the three parts
-        let headerBase64URL = Array(byteArray[..<first])
-        let payloadBase64URL = Array(byteArray[(first + 1)..<second])
-        let signatureBase64URL = Array(byteArray[(second + 1)...])
+        // Extract the three parts. Storage is [UInt8] (Base64URL-encoded prefixes
+        // preserved verbatim for signing input); bridge ASCII.Code slices to
+        // [UInt8] via BSLI for both storage and RFC_4648 hand-off.
+        let headerBase64URL = Array<UInt8>(arr[..<first])
+        let payloadBase64URL = Array<UInt8>(arr[(first + 1)..<second])
+        let signatureBase64URL = Array<UInt8>(arr[(second + 1)...])
 
         // Decode header
         guard !headerBase64URL.isEmpty else {
