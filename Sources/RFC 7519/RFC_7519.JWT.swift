@@ -112,20 +112,8 @@ extension RFC_7519 {
             )
         }
 
-        /// Stdlib-interop forwarder: construction from `[UInt8]` components
-        /// (e.g., raw bytes from network frames, base64-decoder output).
-        @_disfavoredOverload
-        public init(
-            header: [UInt8],
-            payload: [UInt8],
-            signature: [UInt8]
-        ) throws(Error) {
-            try self.init(
-                header: [Byte](header),
-                payload: [Byte](payload),
-                signature: [Byte](signature)
-            )
-        }
+        // Stdlib-interop UInt8 forwarder lives in `RFC 7519 Standard Library
+        // Integration` per [API-BYTE-007].
     }
 }
 

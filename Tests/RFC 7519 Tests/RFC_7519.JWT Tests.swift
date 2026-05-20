@@ -282,28 +282,6 @@ struct JWTTests {
         #expect(jwt.signature.isEmpty)
     }
 
-    // MARK: - Stdlib-interop forwarder ([UInt8] -> [Byte] @_disfavoredOverload)
-
-    @Test
-    func createJWTViaUInt8Forwarder() throws {
-        // Callers holding stdlib [UInt8] (network frames, base64 decoders) reach
-        // the @_disfavoredOverload UInt8 forwarder without manual bridging.
-        let header_u8: [UInt8] = Array(#"{"alg":"HS256"}"#.utf8)
-        let payload_u8: [UInt8] = Array(#"{"sub":"test"}"#.utf8)
-        let signature_u8: [UInt8] = [0x01, 0x02, 0x03]
-
-        let jwt = try RFC_7519.JWT(
-            header: header_u8,
-            payload: payload_u8,
-            signature: signature_u8
-        )
-
-        // Storage retains the Byte-typed identity post-bridging.
-        #expect(jwt.header == [Byte](header_u8))
-        #expect(jwt.payload == [Byte](payload_u8))
-        #expect(jwt.signature == [Byte](signature_u8))
-    }
-
     // MARK: - Equality Tests
 
     @Test

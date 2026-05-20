@@ -23,12 +23,14 @@ let package = Package(
         .watchOS(.v26)
     ],
     products: [
-        .library(name: "RFC 7519", targets: ["RFC 7519"])
+        .library(name: "RFC 7519", targets: ["RFC 7519"]),
+        .library(name: "RFC 7519 Standard Library Integration", targets: ["RFC 7519 Standard Library Integration"]),
     ],
     dependencies: [
         .package(path: "../../swift-primitives/swift-ascii-serializer-primitives"),
         .package(path: "../../swift-primitives/swift-standard-library-extensions"),
         .package(path: "../../swift-primitives/swift-binary-primitives"),
+        .package(path: "../../swift-primitives/swift-byte-primitives"),
         .package(path: "../swift-rfc-4648"),
         .package(path: "../../swift-primitives/swift-parser-primitives")
     ],
@@ -43,10 +45,24 @@ let package = Package(
                 .product(name: "Parser Primitives", package: "swift-parser-primitives")
             ]
         ),
+        .target(
+            name: "RFC 7519 Standard Library Integration",
+            dependencies: [
+                "RFC 7519",
+                .product(name: "Byte Primitives Standard Library Integration", package: "swift-byte-primitives"),
+            ]
+        ),
         .testTarget(
             name: "RFC 7519 Tests",
             dependencies: [
                 "RFC 7519",
+            ]
+        ),
+        .testTarget(
+            name: "RFC 7519 Standard Library Integration Tests",
+            dependencies: [
+                "RFC 7519",
+                "RFC 7519 Standard Library Integration",
             ]
         ),
     ],
