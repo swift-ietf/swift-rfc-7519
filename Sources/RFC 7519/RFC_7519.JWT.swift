@@ -44,30 +44,30 @@ extension RFC_7519 {
     /// This design keeps the RFC implementation Foundation-free.
     public struct JWT: Sendable, Codable {
         /// The decoded header bytes (JSON content)
-        public let header: [UInt8]
+        public let header: [Byte]
 
         /// The decoded payload bytes (JSON content)
-        public let payload: [UInt8]
+        public let payload: [Byte]
 
         /// The decoded signature bytes
-        public let signature: [UInt8]
+        public let signature: [Byte]
 
         /// Original Base64URL encoded header (for signing input preservation)
-        package let headerBase64URL: [UInt8]
+        package let headerBase64URL: [Byte]
 
         /// Original Base64URL encoded payload (for signing input preservation)
-        package let payloadBase64URL: [UInt8]
+        package let payloadBase64URL: [Byte]
 
         /// Creates a JWT WITHOUT validation
         ///
         /// Private to ensure all public construction goes through validation.
         private init(
             __unchecked: Void,
-            header: [UInt8],
-            payload: [UInt8],
-            signature: [UInt8],
-            headerBase64URL: [UInt8],
-            payloadBase64URL: [UInt8]
+            header: [Byte],
+            payload: [Byte],
+            signature: [Byte],
+            headerBase64URL: [Byte],
+            payloadBase64URL: [Byte]
         ) {
             self.header = header
             self.payload = payload
@@ -84,9 +84,9 @@ extension RFC_7519 {
         ///   - signature: The decoded signature bytes
         /// - Throws: `Error` if components are invalid
         public init(
-            header: [UInt8],
-            payload: [UInt8],
-            signature: [UInt8]
+            header: [Byte],
+            payload: [Byte],
+            signature: [Byte]
         ) throws(Error) {
             guard !header.isEmpty else {
                 throw Error.emptyHeader
@@ -96,9 +96,11 @@ extension RFC_7519 {
             }
             // Signature can be empty for unsecured JWTs (alg: none)
 
-            // Encode to Base64URL for signing input
-            let headerBase64URL = RFC_4648.Base64.URL.encode(header)
-            let payloadBase64URL = RFC_4648.Base64.URL.encode(payload)
+            // Encode to Base64URL for signing input. RFC_4648 is still
+            // UInt8-typed (deferred cohort); bridge via .underlying for input
+            // and BSLI [Byte](source) for the encoded result.
+            let headerBase64URL = [Byte](RFC_4648.Base64.URL.encode(header.underlying))
+            let payloadBase64URL = [Byte](RFC_4648.Base64.URL.encode(payload.underlying))
 
             self.init(
                 __unchecked: (),
@@ -107,6 +109,21 @@ extension RFC_7519 {
                 signature: signature,
                 headerBase64URL: headerBase64URL,
                 payloadBase64URL: payloadBase64URL
+            )
+        }
+
+        /// Stdlib-interop forwarder: construction from `[UInt8]` components
+        /// (e.g., raw bytes from network frames, base64-decoder output).
+        @_disfavoredOverload
+        public init(
+            header: [UInt8],
+            payload: [UInt8],
+            signature: [UInt8]
+        ) throws(Error) {
+            try self.init(
+                header: [Byte](header),
+                payload: [Byte](payload),
+                signature: [Byte](signature)
             )
         }
     }
@@ -121,11 +138,13 @@ extension RFC_7519.JWT {
     /// encoded as ASCII bytes. This is what gets signed/verified.
     ///
     /// - Returns: The signing input bytes
-    public var signingInput: [UInt8] {
-        var result: [UInt8] = []
+    public var signingInput: [Byte] {
+        var result: [Byte] = []
         result.reserveCapacity(headerBase64URL.count + 1 + payloadBase64URL.count)
         result.append(contentsOf: headerBase64URL)
-        result.append(UInt8.ascii.period)
+        // ASCII.Code.period bridges to a [Byte] sink via the BSLI
+        // cross-byte-domain append.
+        result.append(ASCII.Code.period)
         result.append(contentsOf: payloadBase64URL)
         return result
     }
@@ -141,16 +160,17 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
         ascii jwt: RFC_7519.JWT,
         into buffer: inout Buffer
     ) where Buffer.Element == Byte {
-        // Storage is [UInt8]; BSLI `append(contentsOf:)` bridges UInt8 → Byte at the
-        // boundary so we don't materialize a [Byte] copy. RFC_4648 still emits UInt8.
+        // Storage is [Byte]; same-type append is exact.
         buffer.append(contentsOf: jwt.headerBase64URL)
         buffer.append(ASCII.Code.period)
         buffer.append(contentsOf: jwt.payloadBase64URL)
         buffer.append(ASCII.Code.period)
-        // RFC_4648.Base64.URL.encode requires Buffer.Element == UInt8; encode to a
-        // staging [UInt8] then bridge into the Byte-typed buffer via BSLI.
+        // RFC_4648.Base64.URL.encode requires Bytes.Element == UInt8 and
+        // Buffer.Element == UInt8 (deferred cohort); bridge jwt.signature via
+        // .underlying for input, then append the UInt8 result via BSLI
+        // cross-domain bridge.
         var signatureEncoded: [UInt8] = []
-        RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
+        RFC_4648.Base64.URL.encode(jwt.signature.underlying, into: &signatureEncoded, padding: false)
         buffer.append(contentsOf: signatureEncoded)
     }
 
@@ -204,56 +224,56 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
             throw Error.invalidFormat(String(decoding: arr, as: UTF8.self))
         }
 
-        // Extract the three parts. Storage is [UInt8] (Base64URL-encoded prefixes
-        // preserved verbatim for signing input); bridge ASCII.Code slices to
-        // [UInt8] via BSLI for both storage and RFC_4648 hand-off.
-        let headerBase64URL = Array<UInt8>(arr[..<first])
-        let payloadBase64URL = Array<UInt8>(arr[(first + 1)..<second])
-        let signatureBase64URL = Array<UInt8>(arr[(second + 1)...])
+        // Extract the three parts as staging [UInt8] for the RFC_4648 hand-off
+        // (deferred cohort, still UInt8-typed). Storage is [Byte]; wrap via
+        // BSLI [Byte](source) before passing to __unchecked init.
+        let headerBase64URL_u8 = Array<UInt8>(arr[..<first])
+        let payloadBase64URL_u8 = Array<UInt8>(arr[(first + 1)..<second])
+        let signatureBase64URL_u8 = Array<UInt8>(arr[(second + 1)...])
 
         // Decode header
-        guard !headerBase64URL.isEmpty else {
+        guard !headerBase64URL_u8.isEmpty else {
             throw Error.emptyHeader
         }
-        guard let header = RFC_4648.Base64.URL.decode(headerBase64URL) else {
+        guard let header_u8 = RFC_4648.Base64.URL.decode(headerBase64URL_u8) else {
             throw Error.invalidBase64URL(
-                String(decoding: headerBase64URL, as: UTF8.self),
+                String(decoding: headerBase64URL_u8, as: UTF8.self),
                 component: "header"
             )
         }
 
         // Decode payload
-        guard !payloadBase64URL.isEmpty else {
+        guard !payloadBase64URL_u8.isEmpty else {
             throw Error.emptyPayload
         }
-        guard let payload = RFC_4648.Base64.URL.decode(payloadBase64URL) else {
+        guard let payload_u8 = RFC_4648.Base64.URL.decode(payloadBase64URL_u8) else {
             throw Error.invalidBase64URL(
-                String(decoding: payloadBase64URL, as: UTF8.self),
+                String(decoding: payloadBase64URL_u8, as: UTF8.self),
                 component: "payload"
             )
         }
 
         // Decode signature (can be empty for unsecured JWTs)
-        let signature: [UInt8]
-        if signatureBase64URL.isEmpty {
-            signature = []
+        let signature_u8: [UInt8]
+        if signatureBase64URL_u8.isEmpty {
+            signature_u8 = []
         } else {
-            guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URL) else {
+            guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URL_u8) else {
                 throw Error.invalidBase64URL(
-                    String(decoding: signatureBase64URL, as: UTF8.self),
+                    String(decoding: signatureBase64URL_u8, as: UTF8.self),
                     component: "signature"
                 )
             }
-            signature = decoded
+            signature_u8 = decoded
         }
 
         self.init(
             __unchecked: (),
-            header: header,
-            payload: payload,
-            signature: signature,
-            headerBase64URL: headerBase64URL,
-            payloadBase64URL: payloadBase64URL
+            header: [Byte](header_u8),
+            payload: [Byte](payload_u8),
+            signature: [Byte](signature_u8),
+            headerBase64URL: [Byte](headerBase64URL_u8),
+            payloadBase64URL: [Byte](payloadBase64URL_u8)
         )
     }
 }

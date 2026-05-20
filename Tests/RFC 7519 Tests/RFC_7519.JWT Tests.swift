@@ -26,15 +26,15 @@ struct JWTTests {
         let token =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-        let jwt = try RFC_7519.JWT(ascii: token.utf8)
+        let jwt = try RFC_7519.JWT(token)
 
         // Header should be decoded JSON bytes
-        let headerString = String(decoding: jwt.header, as: UTF8.self)
+        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
         #expect(headerString.contains("HS256"))
         #expect(headerString.contains("JWT"))
 
         // Payload should be decoded JSON bytes
-        let payloadString = String(decoding: jwt.payload, as: UTF8.self)
+        let payloadString = String(decoding: jwt.payload.underlying, as: UTF8.self)
         #expect(payloadString.contains("1234567890"))
         #expect(payloadString.contains("John Doe"))
 
@@ -47,9 +47,9 @@ struct JWTTests {
         // Unsecured JWT with empty signature
         let token = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0."
 
-        let jwt = try RFC_7519.JWT(ascii: token.utf8)
+        let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header, as: UTF8.self)
+        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
         #expect(headerString.contains("none"))
 
         #expect(jwt.signature.isEmpty)
@@ -58,21 +58,21 @@ struct JWTTests {
     @Test
     func parseJWTInvalidFormatTooFewParts() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "invalid.token".utf8)
+            _ = try RFC_7519.JWT("invalid.token")
         }
     }
 
     @Test
     func parseJWTInvalidFormatTooManyParts() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "too.many.parts.here".utf8)
+            _ = try RFC_7519.JWT("too.many.parts.here")
         }
     }
 
     @Test
     func parseJWTEmpty() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "".utf8)
+            _ = try RFC_7519.JWT("")
         }
     }
 
@@ -80,14 +80,14 @@ struct JWTTests {
     func parseJWTInvalidBase64URLInHeader() {
         // @ is not valid Base64URL
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "invalid@base64.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature".utf8)
+            _ = try RFC_7519.JWT("invalid@base64.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature")
         }
     }
 
     @Test
     func parseJWTInvalidBase64URLInPayload() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "eyJhbGciOiJIUzI1NiJ9.invalid@base64.signature".utf8)
+            _ = try RFC_7519.JWT("eyJhbGciOiJIUzI1NiJ9.invalid@base64.signature")
         }
     }
 
@@ -95,7 +95,7 @@ struct JWTTests {
     func parseJWTInvalidBase64URLInSignature() {
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT(
-                ascii: "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.invalid@base64".utf8
+                "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.invalid@base64"
             )
         }
     }
@@ -103,14 +103,14 @@ struct JWTTests {
     @Test
     func parseJWTEmptyHeader() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: ".eyJzdWIiOiJ0ZXN0In0.sig".utf8)
+            _ = try RFC_7519.JWT(".eyJzdWIiOiJ0ZXN0In0.sig")
         }
     }
 
     @Test
     func parseJWTEmptyPayload() {
         #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(ascii: "eyJhbGciOiJIUzI1NiJ9..sig".utf8)
+            _ = try RFC_7519.JWT("eyJhbGciOiJIUzI1NiJ9..sig")
         }
     }
 
@@ -121,11 +121,11 @@ struct JWTTests {
         // Create a JWT from components
         let headerJSON = #"{"alg":"HS256","typ":"JWT"}"#
         let payloadJSON = #"{"sub":"test"}"#
-        let signature: [UInt8] = [0x01, 0x02, 0x03, 0x04]
+        let signature: [Byte] = [0x01, 0x02, 0x03, 0x04]
 
         let jwt = try RFC_7519.JWT(
-            header: Array(headerJSON.utf8),
-            payload: Array(payloadJSON.utf8),
+            header: [Byte](headerJSON.utf8),
+            payload: [Byte](payloadJSON.utf8),
             signature: signature
         )
 
@@ -137,7 +137,7 @@ struct JWTTests {
         #expect(parts.count == 3)
 
         // Parse back and verify
-        let parsed = try RFC_7519.JWT(ascii: serialized.utf8)
+        let parsed = try RFC_7519.JWT(serialized)
         #expect(parsed.header == jwt.header)
         #expect(parsed.payload == jwt.payload)
         #expect(parsed.signature == jwt.signature)
@@ -147,20 +147,21 @@ struct JWTTests {
     func serializeToBytes() throws {
         let headerJSON = #"{"alg":"HS256"}"#
         let payloadJSON = #"{"sub":"user"}"#
-        let signature: [UInt8] = [0xDE, 0xAD, 0xBE, 0xEF]
+        let signature: [Byte] = [0xDE, 0xAD, 0xBE, 0xEF]
 
         let jwt = try RFC_7519.JWT(
-            header: Array(headerJSON.utf8),
-            payload: Array(payloadJSON.utf8),
+            header: [Byte](headerJSON.utf8),
+            payload: [Byte](payloadJSON.utf8),
             signature: signature
         )
 
-        // Serialize to bytes
-        let bytes = [UInt8](jwt)
+        // Serialize to bytes (Binary.Serializable [Byte] result + stdlib-interop
+        // [UInt8] forwarder both available; this site uses the [Byte] primary).
+        let bytes: [Byte] = Array(jwt)
         #expect(!bytes.isEmpty)
 
         // Should be valid ASCII
-        let string = String(decoding: bytes, as: UTF8.self)
+        let string = String(decoding: bytes.underlying, as: UTF8.self)
         #expect(string.split(separator: ".").count == 3)
     }
 
@@ -171,7 +172,7 @@ struct JWTTests {
         let originalToken =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-        let jwt = try RFC_7519.JWT(ascii: originalToken.utf8)
+        let jwt = try RFC_7519.JWT(originalToken)
         let serialized = String(jwt)
 
         // Should be exactly the same
@@ -182,16 +183,16 @@ struct JWTTests {
     func roundTripWithNewlyCreatedJWT() throws {
         let headerJSON = #"{"alg":"RS256","kid":"key1"}"#
         let payloadJSON = #"{"iss":"test","sub":"user123"}"#
-        let signature: [UInt8] = Array(repeating: 0xAB, count: 32)
+        let signature: [Byte] = Array(repeating: 0xAB, count: 32)
 
         let jwt = try RFC_7519.JWT(
-            header: Array(headerJSON.utf8),
-            payload: Array(payloadJSON.utf8),
+            header: [Byte](headerJSON.utf8),
+            payload: [Byte](payloadJSON.utf8),
             signature: signature
         )
 
         let serialized = String(jwt)
-        let parsed = try RFC_7519.JWT(ascii: serialized.utf8)
+        let parsed = try RFC_7519.JWT(serialized)
 
         #expect(parsed.header == jwt.header)
         #expect(parsed.payload == jwt.payload)
@@ -206,11 +207,11 @@ struct JWTTests {
         let originalToken =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
 
-        let jwt = try RFC_7519.JWT(ascii: originalToken.utf8)
+        let jwt = try RFC_7519.JWT(originalToken)
         let signingInput = jwt.signingInput
 
         // Signing input should be header.payload (without signature)
-        let signingInputString = String(decoding: signingInput, as: UTF8.self)
+        let signingInputString = String(decoding: signingInput.underlying, as: UTF8.self)
         #expect(
             signingInputString == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0"
         )
@@ -221,9 +222,9 @@ struct JWTTests {
         // Valid JWT with proper Base64URL signature (c2lnbmF0dXJl is Base64URL for "signature")
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl"
 
-        let jwt = try RFC_7519.JWT(ascii: token.utf8)
+        let jwt = try RFC_7519.JWT(token)
         let signingInput = jwt.signingInput
-        let signingInputString = String(decoding: signingInput, as: UTF8.self)
+        let signingInputString = String(decoding: signingInput.underlying, as: UTF8.self)
 
         #expect(signingInputString == "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0")
     }
@@ -232,9 +233,9 @@ struct JWTTests {
 
     @Test
     func createJWTFromComponents() throws {
-        let header = Array(#"{"alg":"HS256"}"#.utf8)
-        let payload = Array(#"{"sub":"123"}"#.utf8)
-        let signature: [UInt8] = [0x01, 0x02, 0x03]
+        let header: [Byte] = [Byte](#"{"alg":"HS256"}"#.utf8)
+        let payload: [Byte] = [Byte](#"{"sub":"123"}"#.utf8)
+        let signature: [Byte] = [0x01, 0x02, 0x03]
 
         let jwt = try RFC_7519.JWT(
             header: header,
@@ -251,8 +252,8 @@ struct JWTTests {
     func createJWTWithEmptyHeaderThrows() {
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT(
-                header: [],
-                payload: Array(#"{"sub":"test"}"#.utf8),
+                header: [Byte](),
+                payload: [Byte](#"{"sub":"test"}"#.utf8),
                 signature: [0x01]
             )
         }
@@ -262,8 +263,8 @@ struct JWTTests {
     func createJWTWithEmptyPayloadThrows() {
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT(
-                header: Array(#"{"alg":"HS256"}"#.utf8),
-                payload: [],
+                header: [Byte](#"{"alg":"HS256"}"#.utf8),
+                payload: [Byte](),
                 signature: [0x01]
             )
         }
@@ -273,12 +274,34 @@ struct JWTTests {
     func createJWTWithEmptySignatureAllowed() throws {
         // Empty signature is allowed for unsecured JWTs (alg: none)
         let jwt = try RFC_7519.JWT(
-            header: Array(#"{"alg":"none"}"#.utf8),
-            payload: Array(#"{"sub":"test"}"#.utf8),
+            header: [Byte](#"{"alg":"none"}"#.utf8),
+            payload: [Byte](#"{"sub":"test"}"#.utf8),
             signature: []
         )
 
         #expect(jwt.signature.isEmpty)
+    }
+
+    // MARK: - Stdlib-interop forwarder ([UInt8] -> [Byte] @_disfavoredOverload)
+
+    @Test
+    func createJWTViaUInt8Forwarder() throws {
+        // Callers holding stdlib [UInt8] (network frames, base64 decoders) reach
+        // the @_disfavoredOverload UInt8 forwarder without manual bridging.
+        let header_u8: [UInt8] = Array(#"{"alg":"HS256"}"#.utf8)
+        let payload_u8: [UInt8] = Array(#"{"sub":"test"}"#.utf8)
+        let signature_u8: [UInt8] = [0x01, 0x02, 0x03]
+
+        let jwt = try RFC_7519.JWT(
+            header: header_u8,
+            payload: payload_u8,
+            signature: signature_u8
+        )
+
+        // Storage retains the Byte-typed identity post-bridging.
+        #expect(jwt.header == [Byte](header_u8))
+        #expect(jwt.payload == [Byte](payload_u8))
+        #expect(jwt.signature == [Byte](signature_u8))
     }
 
     // MARK: - Equality Tests
@@ -287,8 +310,8 @@ struct JWTTests {
     func jwtEquality() throws {
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.sig123"
 
-        let jwt1 = try RFC_7519.JWT(ascii: token.utf8)
-        let jwt2 = try RFC_7519.JWT(ascii: token.utf8)
+        let jwt1 = try RFC_7519.JWT(token)
+        let jwt2 = try RFC_7519.JWT(token)
 
         #expect(jwt1 == jwt2)
     }
@@ -298,8 +321,8 @@ struct JWTTests {
         let token1 = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0MSJ9.sig1"
         let token2 = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0MiJ9.sig2"
 
-        let jwt1 = try RFC_7519.JWT(ascii: token1.utf8)
-        let jwt2 = try RFC_7519.JWT(ascii: token2.utf8)
+        let jwt1 = try RFC_7519.JWT(token1)
+        let jwt2 = try RFC_7519.JWT(token2)
 
         #expect(jwt1 != jwt2)
     }
@@ -333,7 +356,7 @@ struct JWTTests {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header, as: UTF8.self)
+        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
         #expect(headerString.contains("HS256"))
     }
 
@@ -344,7 +367,7 @@ struct JWTTests {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header, as: UTF8.self)
+        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
         #expect(headerString.contains("HS256"))
     }
 }
