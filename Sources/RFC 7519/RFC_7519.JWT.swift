@@ -189,7 +189,12 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     where Bytes.Element == Byte {
         // Lift to ASCII.Code at the entry boundary: JWT compact form is strict
         // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
-        let arr = Array<ASCII.Code>(bytes)
+        let arr: [ASCII.Code]
+        do {
+            arr = try Array<ASCII.Code>(bytes)
+        } catch {
+            throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
+        }
         guard !arr.isEmpty else { throw Error.empty }
 
         // Find the two period separators
