@@ -12,6 +12,7 @@
 // ===----------------------------------------------------------------------===//
 
 import Testing
+import Binary_Serializable_Primitives
 
 @testable import RFC_7519
 
