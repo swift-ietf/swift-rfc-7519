@@ -14,7 +14,6 @@
 public import ASCII_Serializer_Primitives
 public import Binary_Serializable_Primitives
 public import Parseable_ASCII_Primitives
-public import Serializer_Primitives
 
 extension RFC_7519 {
     /// A JSON Web Token as defined in RFC 7519
@@ -261,14 +260,27 @@ extension RFC_7519.JWT: ASCII.Parseable {
 
 // MARK: - ASCII Serialization
 
-extension RFC_7519.JWT: Serializable, ASCII.Serializable, Binary.Serializable {
-    /// Canonical ASCII serializer for the RFC 7519 compact JWT form.
-    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
-        Serializer_Primitives.Serializer.Pure { jwt, buffer in
-            var bytes: [Byte] = []
-            serializeBytes(jwt, into: &bytes)
-            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
-        }
+extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
+    /// Own `ASCII.Serializable` verb ([FAM-012]) — the RFC 7519 / RFC 7515 compact
+    /// JWT form `BASE64URL(header) "." BASE64URL(payload) "." BASE64URL(signature)`,
+    /// emitting directly onto the `ASCII.Code` substrate. The stored
+    /// `headerBase64URL` / `payloadBase64URL` are already the Base64URL alphabet
+    /// (ASCII); each own byte is lifted to its `ASCII.Code`. The `.` joiner is a
+    /// named `ASCII.Code` constant. The signature is Base64URL-encoded straight
+    /// into the ASCII-code buffer — the encode verb already produces `ASCII.Code`,
+    /// so the same algorithm needs no byte-detour here. Output is identical to the
+    /// Binary witness body (`serializeBytes`).
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == ASCII.Code {
+        buffer.append(contentsOf: value.headerBase64URL.map { ASCII.Code(unchecked: $0) })
+        buffer.append(ASCII.Code.period)
+        buffer.append(contentsOf: value.payloadBase64URL.map { ASCII.Code(unchecked: $0) })
+        buffer.append(ASCII.Code.period)
+        // Base64URL encode (RFC 7515: no padding). The encode verb writes
+        // ASCII.Code, which matches this same-substrate buffer — append directly.
+        RFC_4648.Base64.URL.encode(value.signature, into: &buffer, padding: false)
     }
 
     /// Explicit `Binary.Serializable` witness disambiguating the two
