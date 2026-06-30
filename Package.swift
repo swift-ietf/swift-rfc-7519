@@ -11,6 +11,8 @@ extension Target.Dependency {
     static var incits41986: Self { .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives") }
     static var standards: Self { .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions") }
     static var binary: Self { .product(name: "Binary Primitives", package: "swift-binary-primitives") }
+    static var binarySerializable: Self { .product(name: "Binary Serializable Primitives", package: "swift-binary-serializer-primitives") }
+    static var parseableASCII: Self { .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives") }
     static var rfc4648: Self { .product(name: "RFC 4648", package: "swift-rfc-4648") }
 }
 
@@ -28,6 +30,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git", branch: "main"),
+        .package(url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-standard-library-extensions.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-binary-primitives.git", branch: "main"),
         .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
@@ -39,6 +43,8 @@ let package = Package(
             name: "RFC 7519",
             dependencies: [
                 .incits41986,
+                .binarySerializable,
+                .parseableASCII,
                 .standards,
                 .binary,
                 .rfc4648,

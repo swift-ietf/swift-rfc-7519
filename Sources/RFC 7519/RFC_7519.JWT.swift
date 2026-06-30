@@ -12,6 +12,9 @@
 // ===----------------------------------------------------------------------===//
 
 public import ASCII_Serializer_Primitives
+public import Binary_Serializable_Primitives
+public import Parseable_ASCII_Primitives
+public import Serializer_Primitives
 
 extension RFC_7519 {
     /// A JSON Web Token as defined in RFC 7519
@@ -139,28 +142,12 @@ extension RFC_7519.JWT {
     }
 }
 
-// MARK: - Binary.ASCII.Serializable
+// MARK: - ASCII Read
 
-extension RFC_7519.JWT: Binary.ASCII.Serializable {
-    /// Serialize JWT to compact format (header.payload.signature)
-    ///
-    /// Per RFC 7519/7515, outputs Base64URL-encoded parts separated by periods.
-    public static func serialize<Buffer: RangeReplaceableCollection>(
-        ascii jwt: RFC_7519.JWT,
-        into buffer: inout Buffer
-    ) where Buffer.Element == Byte {
-        // Storage is [Byte]; same-type append is exact.
-        buffer.append(contentsOf: jwt.headerBase64URL)
-        buffer.append(ASCII.Code.period)
-        buffer.append(contentsOf: jwt.payloadBase64URL)
-        buffer.append(ASCII.Code.period)
-        // RFC_4648.Base64.URL.encode takes Bytes.Element == Byte and
-        // Buffer.Element == ASCII.Code (Arc C-continuation 2026-05-20).
-        // jwt.signature: [Byte] feeds the encode directly; encoded ASCII codes
-        // append into the [Byte] sink via BSLI cross-byte-domain bridge.
-        var signatureEncoded: [ASCII.Code] = []
-        RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
-        buffer.append(contentsOf: signatureEncoded)
+extension RFC_7519.JWT: ASCII.Parseable {
+    /// Creates a JWT by validating `string`'s UTF-8 bytes as the compact form.
+    public init(_ string: some StringProtocol) throws(Error) {
+        try self.init(ascii: [Byte](string.utf8))
     }
 
     /// Parses a JWT from its compact serialization format (AUTHORITATIVE IMPLEMENTATION)
@@ -185,7 +172,7 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     ///
     /// - Parameter bytes: The JWT as ASCII bytes in compact format
     /// - Throws: `Error` if parsing fails
-    public init<Bytes: Collection>(ascii bytes: Bytes, in context: Void = ()) throws(Error)
+    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Lift to ASCII.Code at the entry boundary: JWT compact form is strict
         // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
@@ -272,13 +259,66 @@ extension RFC_7519.JWT: Binary.ASCII.Serializable {
     }
 }
 
-// MARK: - Protocol Conformances
+// MARK: - ASCII Serialization
 
-extension RFC_7519.JWT: Binary.ASCII.RawRepresentable {
-    public typealias RawValue = String
+extension RFC_7519.JWT: Serializable, ASCII.Serializable, Binary.Serializable {
+    /// Canonical ASCII serializer for the RFC 7519 compact JWT form.
+    public static var serializer: Serializer_Primitives.Serializer.Pure<Self, [ASCII.Code]> {
+        Serializer_Primitives.Serializer.Pure { jwt, buffer in
+            var bytes: [Byte] = []
+            serializeBytes(jwt, into: &bytes)
+            buffer.append(contentsOf: bytes.map { ASCII.Code(unchecked: $0) })
+        }
+    }
+
+    /// Explicit `Binary.Serializable` witness disambiguating the two
+    /// constraint-incomparable defaults.
+    public static func serialize<Buffer: RangeReplaceableCollection>(
+        _ value: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        serializeBytes(value, into: &buffer)
+    }
+
+    /// Byte-domain serialization body (RFC 7519 / RFC 7515 compact form:
+    /// `BASE64URL(header) "." BASE64URL(payload) "." BASE64URL(signature)`).
+    private static func serializeBytes<Buffer: RangeReplaceableCollection>(
+        _ jwt: Self,
+        into buffer: inout Buffer
+    ) where Buffer.Element == Byte {
+        // Storage is [Byte]; same-type append is exact.
+        buffer.append(contentsOf: jwt.headerBase64URL)
+        buffer.append(ASCII.Code.period)
+        buffer.append(contentsOf: jwt.payloadBase64URL)
+        buffer.append(ASCII.Code.period)
+        // RFC_4648.Base64.URL.encode takes Bytes.Element == Byte and
+        // Buffer.Element == ASCII.Code (Arc C-continuation 2026-05-20).
+        // jwt.signature: [Byte] feeds the encode directly; encoded ASCII codes
+        // append into the [Byte] sink via BSLI cross-byte-domain bridge.
+        var signatureEncoded: [ASCII.Code] = []
+        RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
+        buffer.append(contentsOf: signatureEncoded)
+    }
 }
 
-extension RFC_7519.JWT: CustomStringConvertible {}
+// MARK: - Protocol Conformances
+
+extension RFC_7519.JWT: Swift.RawRepresentable {
+    /// The JWT's compact ASCII serialization as a `String` (computed; the
+    /// rawValue is derived from serialization, not stored).
+    public var rawValue: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+
+    public init?(rawValue: String) { try? self.init(rawValue) }
+}
+
+extension RFC_7519.JWT: CustomStringConvertible {
+    /// The JWT's compact ASCII serialization decoded as a `String`.
+    public var description: String {
+        String(decoding: serialized.underlying, as: UTF8.self)
+    }
+}
 
 extension RFC_7519.JWT: Hashable {
     public func hash(into hasher: inout Hasher) {
