@@ -19,8 +19,8 @@
 // output), so no expected string is hand-derived.
 //
 
-import Testing
 import Binary_Serializable_Primitives
+import Testing
 
 @testable import RFC_7519
 

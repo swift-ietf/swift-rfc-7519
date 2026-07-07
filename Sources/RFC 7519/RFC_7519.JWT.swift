@@ -177,7 +177,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
         let arr: [ASCII.Code]
         do {
-            arr = try Array<ASCII.Code>(bytes)
+            arr = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
         }
@@ -207,40 +207,40 @@ extension RFC_7519.JWT: ASCII.Parseable {
         // Extract the three parts as [ASCII.Code] slices for the RFC_4648
         // hand-off (Arc C-continuation 2026-05-20: rfc-4648 decode takes
         // Bytes.Element == ASCII.Code and returns [Byte]?).
-        let headerBase64URL_codes = Array(arr[..<first])
-        let payloadBase64URL_codes = Array(arr[(first + 1)..<second])
-        let signatureBase64URL_codes = Array(arr[(second + 1)...])
+        let headerBase64URLCodes = Array(arr[..<first])
+        let payloadBase64URLCodes = Array(arr[(first + 1)..<second])
+        let signatureBase64URLCodes = Array(arr[(second + 1)...])
 
         // Decode header
-        guard !headerBase64URL_codes.isEmpty else {
+        guard !headerBase64URLCodes.isEmpty else {
             throw Error.emptyHeader
         }
-        guard let header = RFC_4648.Base64.URL.decode(headerBase64URL_codes) else {
+        guard let header = RFC_4648.Base64.URL.decode(headerBase64URLCodes) else {
             throw Error.invalidBase64URL(
-                String(decoding: headerBase64URL_codes, as: UTF8.self),
+                String(decoding: headerBase64URLCodes, as: UTF8.self),
                 component: "header"
             )
         }
 
         // Decode payload
-        guard !payloadBase64URL_codes.isEmpty else {
+        guard !payloadBase64URLCodes.isEmpty else {
             throw Error.emptyPayload
         }
-        guard let payload = RFC_4648.Base64.URL.decode(payloadBase64URL_codes) else {
+        guard let payload = RFC_4648.Base64.URL.decode(payloadBase64URLCodes) else {
             throw Error.invalidBase64URL(
-                String(decoding: payloadBase64URL_codes, as: UTF8.self),
+                String(decoding: payloadBase64URLCodes, as: UTF8.self),
                 component: "payload"
             )
         }
 
         // Decode signature (can be empty for unsecured JWTs)
         let signature: [Byte]
-        if signatureBase64URL_codes.isEmpty {
+        if signatureBase64URLCodes.isEmpty {
             signature = []
         } else {
-            guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URL_codes) else {
+            guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URLCodes) else {
                 throw Error.invalidBase64URL(
-                    String(decoding: signatureBase64URL_codes, as: UTF8.self),
+                    String(decoding: signatureBase64URLCodes, as: UTF8.self),
                     component: "signature"
                 )
             }
@@ -252,8 +252,8 @@ extension RFC_7519.JWT: ASCII.Parseable {
             header: header,
             payload: payload,
             signature: signature,
-            headerBase64URL: [Byte](headerBase64URL_codes),
-            payloadBase64URL: [Byte](payloadBase64URL_codes)
+            headerBase64URL: [Byte](headerBase64URLCodes),
+            payloadBase64URL: [Byte](payloadBase64URLCodes)
         )
     }
 }

@@ -73,7 +73,8 @@ extension RFC_7519.JWT.Parse: Parser.`Protocol` {
     @inlinable
     func _expectPeriod(_ input: inout Input) throws(Failure) {
         guard input.startIndex < input.endIndex,
-            input[input.startIndex] == 0x2E else {
+            input[input.startIndex] == 0x2E
+        else {
             throw .expectedPeriod
         }
         input = input[input.index(after: input.startIndex)...]

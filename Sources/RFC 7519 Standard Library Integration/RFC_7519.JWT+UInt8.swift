@@ -6,8 +6,8 @@
 // output) via `.lazy.map(Byte.init)`. Per [API-BYTE-007] (byte-discipline
 // skill).
 
-public import RFC_7519
 internal import Byte_Primitives
+public import RFC_7519
 
 extension RFC_7519.JWT {
     /// Stdlib-interop forwarder: construction from `[UInt8]` components

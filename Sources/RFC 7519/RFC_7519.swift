@@ -14,6 +14,7 @@
 /// RFC 7519: JSON Web Token (JWT)
 ///
 /// This module provides Swift types for RFC 7519 compliant JSON Web Tokens.
+///
 /// JWTs are a compact, URL-safe means of representing claims to be transferred
 /// between two parties.
 ///
