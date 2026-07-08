@@ -58,7 +58,7 @@ extension RFC_7519.JWT.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    func _consumeSegment(_ input: inout Input) throws(Failure) -> Input {
+    package func _consumeSegment(_ input: inout Input) throws(Failure) -> Input {
         var index = input.startIndex
         while index < input.endIndex {
             if input[index] == 0x2E { break }
@@ -71,7 +71,7 @@ extension RFC_7519.JWT.Parse: Parser.`Protocol` {
     }
 
     @inlinable
-    func _expectPeriod(_ input: inout Input) throws(Failure) {
+    package func _expectPeriod(_ input: inout Input) throws(Failure) {
         guard input.startIndex < input.endIndex,
             input[input.startIndex] == 0x2E
         else {

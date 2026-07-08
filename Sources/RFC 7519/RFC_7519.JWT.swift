@@ -176,7 +176,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         // Lift to ASCII.Code at the entry boundary: JWT compact form is strict
         // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
         let arr: [ASCII.Code]
-        do {
+        do throws(ASCII.Code.Error) {
             arr = try [ASCII.Code](bytes)
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
