@@ -24,34 +24,36 @@ import Testing
 
 @testable import RFC_7519
 
-@Suite
-struct JWTSerializationEquivalenceTests {
+extension RFC_7519.JWT {
+    @Suite
+    struct Test {
 
-    @Test
-    func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
-        // Segment bytes chosen so every part's Base64URL encoding exercises the
-        // URL-safe alphabet ('-' = sextet 62, '_' = sextet 63) and the unpadded
-        // tail (RFC 7515: padding: false). header [0xFF,0xFF,0xBF] -> "__-_",
-        // payload [0xFB,0xF0] -> "-_A", signature [0xFF,0xEF,0xFB] -> "_-_7".
-        let jwt = try RFC_7519.JWT(
-            header: [0xFF, 0xFF, 0xBF],
-            payload: [0xFB, 0xF0],
-            signature: [0xFF, 0xEF, 0xFB]
-        )
+        @Test
+        func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
+            // Segment bytes chosen so every part's Base64URL encoding exercises the
+            // URL-safe alphabet ('-' = sextet 62, '_' = sextet 63) and the unpadded
+            // tail (RFC 7515: padding: false). header [0xFF,0xFF,0xBF] -> "__-_",
+            // payload [0xFB,0xF0] -> "-_A", signature [0xFF,0xEF,0xFB] -> "_-_7".
+            let jwt = try RFC_7519.JWT(
+                header: [0xFF, 0xFF, 0xBF],
+                payload: [0xFB, 0xF0],
+                signature: [0xFF, 0xEF, 0xFB]
+            )
 
-        // ASCII.Serializable verb output, projected to bytes.
-        let viaASCII: [Byte] = jwt.serialized
+            // ASCII.Serializable verb output, projected to bytes.
+            let viaASCII: [Byte] = jwt.serialized
 
-        // Binary.Serializable witness output.
-        var viaBinary: [Byte] = []
-        RFC_7519.JWT.serialize(jwt, into: &viaBinary)
+            // Binary.Serializable witness output.
+            var viaBinary: [Byte] = []
+            RFC_7519.JWT.serialize(jwt, into: &viaBinary)
 
-        #expect(viaASCII == viaBinary)
+            #expect(viaASCII == viaBinary)
 
-        // Confirm the chosen inputs actually drive the URL-safe alphabet, so the
-        // equivalence above is meaningful for the '-' / '_' encode branches.
-        let text = String(decoding: viaASCII.underlying, as: UTF8.self)
-        #expect(text.contains("-"))
-        #expect(text.contains("_"))
+            // Confirm the chosen inputs actually drive the URL-safe alphabet, so the
+            // equivalence above is meaningful for the '-' / '_' encode branches.
+            let text = String(decoding: viaASCII.underlying, as: UTF8.self)
+            #expect(text.contains("-"))
+            #expect(text.contains("_"))
+        }
     }
 }
