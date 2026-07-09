@@ -18,7 +18,7 @@ import Testing
 @Suite("RFC 7519 JWT UInt8 forwarder")
 struct RFC_7519_JWT_UInt8_Tests {
     @Test
-    func createJWTViaUInt8Forwarder() throws {
+    func `create JWT Via UInt8 Forwarder`() throws {
         // Callers holding stdlib [UInt8] (network frames, base64 decoders) reach
         // the @_disfavoredOverload UInt8 forwarder without manual bridging.
         let headerU8: [UInt8] = Array(#"{"alg":"HS256"}"#.utf8)

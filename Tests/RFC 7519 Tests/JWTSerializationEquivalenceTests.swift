@@ -28,7 +28,7 @@ import Testing
 struct JWTSerializationEquivalenceTests {
 
     @Test
-    func asciiVerbOutputEqualsBinaryWitnessOutputForTheBase64URLEncodePath() throws {
+    func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
         // Segment bytes chosen so every part's Base64URL encoding exercises the
         // URL-safe alphabet ('-' = sextet 62, '_' = sextet 63) and the unpadded
         // tail (RFC 7515: padding: false). header [0xFF,0xFF,0xBF] -> "__-_",
