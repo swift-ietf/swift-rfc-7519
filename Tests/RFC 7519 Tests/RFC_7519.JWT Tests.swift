@@ -16,8 +16,13 @@ import Testing
 
 @testable import RFC_7519
 
-@Suite
-struct JWTTests {
+// [SWIFT-TEST-002] collision merge: RFC_7519.JWT already carries a `Test` suite
+// (declared in JWTSerializationEquivalenceTests.swift). No leftover distinguishing
+// token remained after stripping "JWT"/"Tests" from the former top-level suite name
+// `JWTTests`, so per the collision rule these members merge into the existing
+// `RFC_7519.JWT.Test` suite via extension (trivially disjoint — no name overlap
+// with the equivalence-guard test already hosted there).
+extension RFC_7519.JWT.Test {
 
     // MARK: - JWT Parsing Tests
 
