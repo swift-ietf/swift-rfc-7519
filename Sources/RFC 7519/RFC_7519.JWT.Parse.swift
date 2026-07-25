@@ -33,15 +33,10 @@ extension RFC_7519.JWT.Parse {
             self.signature = signature
         }
     }
-
-    public enum Error: Swift.Error, Sendable, Equatable {
-        case expectedPeriod
-        case emptySegment
-    }
 }
 
 extension RFC_7519.JWT.Parse: Parser.`Protocol` {
-    public typealias Failure = RFC_7519.JWT.Parse<Input>.Error
+    public typealias Failure = __JWTParserError
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
