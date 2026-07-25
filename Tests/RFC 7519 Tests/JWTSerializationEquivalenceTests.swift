@@ -29,7 +29,8 @@ extension RFC_7519.JWT {
     struct Test {
 
         @Test
-        func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
+        func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws
+        {
             // Segment bytes chosen so every part's Base64URL encoding exercises the
             // URL-safe alphabet ('-' = sextet 62, '_' = sextet 63) and the unpadded
             // tail (RFC 7515: padding: false). header [0xFF,0xFF,0xBF] -> "__-_",
