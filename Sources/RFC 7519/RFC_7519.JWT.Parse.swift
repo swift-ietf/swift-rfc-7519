@@ -37,6 +37,11 @@ extension RFC_7519.JWT.Parse {
 
 extension RFC_7519.JWT.Parse: Parser.`Protocol` {
     public typealias Failure = __JWTParserError
+    /// Leaf parser: the `body` witness comes from the `Body == Never` default
+    /// ([API-IMPL-020]). `Parser.Protocol` gives `Failure` a `= Never` default
+    /// but gives `Body` none, so a generic leaf conformer that omits this fails
+    /// at link time with `Undefined symbols ... protocol witness for body.getter`.
+    public typealias Body = Never
 
     @inlinable
     public func parse(_ input: inout Input) throws(Failure) -> Output {
