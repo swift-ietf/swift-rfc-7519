@@ -1,0 +1,6 @@
+version: 1
+builder:
+  configs:
+  - documentation_targets:
+    - RFC 7519
+    - RFC 7519 Standard Library Integration
