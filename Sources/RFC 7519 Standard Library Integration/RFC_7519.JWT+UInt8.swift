@@ -13,6 +13,10 @@ extension RFC_7519.JWT {
     /// Stdlib-interop forwarder: construction from `[UInt8]` components
     /// (e.g., raw bytes from network frames, base64-decoder output).
     @_disfavoredOverload
+    // swift-linter:disable:next throwing wrapper init
+    // REASON: pure stdlib-interop type bridge per [API-BYTE-007] — converts
+    // `[UInt8]` to `[Byte]` and forwards to the byte-domain validating init,
+    // which owns the invariant; no additional validation belongs here.
     public init(
         header: [UInt8],
         payload: [UInt8],

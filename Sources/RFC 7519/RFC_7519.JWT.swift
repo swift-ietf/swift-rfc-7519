@@ -106,6 +106,10 @@ extension RFC_7519 {
             let payloadBase64URL = [Byte](RFC_4648.Base64.URL.encode(payload))
 
             self.init(
+                // swift-linter:disable:next unchecked call site
+                // REASON: [CONV-001] same-package use — this is the type's own
+                // public validating initializer handing already-validated
+                // components to the private storage-only initializer.
                 __unchecked: (),
                 header: header,
                 payload: payload,
@@ -145,6 +149,10 @@ extension RFC_7519.JWT {
 
 extension RFC_7519.JWT: ASCII.Parseable {
     /// Creates a JWT by validating `string`'s UTF-8 bytes as the compact form.
+    // swift-linter:disable:next throwing wrapper init
+    // REASON: pure stdlib-interop type bridge — converts UTF-8 bytes to
+    // `[Byte]` and forwards to the validating `ascii:` init, which owns the
+    // invariant; no additional validation belongs here.
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
@@ -171,7 +179,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
     ///
     /// - Parameter bytes: The JWT as ASCII bytes in compact format
     /// - Throws: `Error` if parsing fails
-    public init<Bytes: Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
         // Lift to ASCII.Code at the entry boundary: JWT compact form is strict
         // ASCII (Base64URL alphabet + period); non-ASCII bytes are fail-state.
@@ -248,6 +256,10 @@ extension RFC_7519.JWT: ASCII.Parseable {
         }
 
         self.init(
+            // swift-linter:disable:next unchecked call site
+            // REASON: [CONV-001] same-package use — this is the type's own
+            // parsing initializer handing already-validated, already-decoded
+            // components to the private storage-only initializer.
             __unchecked: (),
             header: header,
             payload: payload,
@@ -322,7 +334,13 @@ extension RFC_7519.JWT: Swift.RawRepresentable {
         String(decoding: serialized.underlying, as: UTF8.self)
     }
 
-    public init?(rawValue: String) { try? self.init(rawValue) }
+    public init?(rawValue: String) {
+        do throws(Error) {
+            try self.init(rawValue)
+        } catch {
+            return nil
+        }
+    }
 }
 
 extension RFC_7519.JWT: CustomStringConvertible {
