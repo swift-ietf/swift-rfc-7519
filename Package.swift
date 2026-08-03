@@ -8,11 +8,24 @@ extension String {
 
 extension Target.Dependency {
     static var rfc7519: Self { .target(name: .rfc7519) }
-    static var incits41986: Self { .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives") }
-    static var standards: Self { .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions") }
-    static var binary: Self { .product(name: "Binary Primitives", package: "swift-binary-primitives") }
-    static var binarySerializable: Self { .product(name: "Binary Serializable Primitives", package: "swift-binary-serializer-primitives") }
-    static var parseableASCII: Self { .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives") }
+    static var incits41986: Self {
+        .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
+    }
+    static var standards: Self {
+        .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
+    }
+    static var binary: Self {
+        .product(name: "Binary Primitives", package: "swift-binary-primitives")
+    }
+    static var binarySerializable: Self {
+        .product(
+            name: "Binary Serializable Primitives",
+            package: "swift-binary-serializer-primitives"
+        )
+    }
+    static var parseableASCII: Self {
+        .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
+    }
     static var rfc4648: Self { .product(name: "RFC 4648", package: "swift-rfc-4648") }
 }
 
@@ -22,21 +35,45 @@ let package = Package(
         .macOS(.v26),
         .iOS(.v26),
         .tvOS(.v26),
-        .watchOS(.v26)
+        .watchOS(.v26),
     ],
     products: [
         .library(name: "RFC 7519", targets: ["RFC 7519"]),
-        .library(name: "RFC 7519 Standard Library Integration", targets: ["RFC 7519 Standard Library Integration"]),
+        .library(
+            name: "RFC 7519 Standard Library Integration",
+            targets: ["RFC 7519 Standard Library Integration"]
+        ),
     ],
     dependencies: [
-        .package(url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-standard-library-extensions.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-binary-primitives.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-byte-primitives.git", branch: "main"),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-binary-primitives.git",
+            branch: "main"
+        ),
+        .package(
+            url: "https://github.com/swift-primitives/swift-byte-primitives.git",
+            branch: "main"
+        ),
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
-        .package(url: "https://github.com/swift-primitives/swift-parser-primitives.git", branch: "main")
+        .package(
+            url: "https://github.com/swift-primitives/swift-parser-primitives.git",
+            branch: "main"
+        ),
     ],
     targets: [
         .target(
@@ -48,20 +85,23 @@ let package = Package(
                 .standards,
                 .binary,
                 .rfc4648,
-                .product(name: "Parser Primitives", package: "swift-parser-primitives")
+                .product(name: "Parser Primitives", package: "swift-parser-primitives"),
             ]
         ),
         .target(
             name: "RFC 7519 Standard Library Integration",
             dependencies: [
                 "RFC 7519",
-                .product(name: "Byte Primitives Standard Library Integration", package: "swift-byte-primitives"),
+                .product(
+                    name: "Byte Primitives Standard Library Integration",
+                    package: "swift-byte-primitives"
+                ),
             ]
         ),
         .testTarget(
             name: "RFC 7519 Tests",
             dependencies: [
-                "RFC 7519",
+                "RFC 7519"
             ]
         ),
         .testTarget(
