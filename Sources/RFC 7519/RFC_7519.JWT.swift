@@ -148,11 +148,11 @@ extension RFC_7519.JWT {
 // MARK: - ASCII Read
 
 extension RFC_7519.JWT: ASCII.Parseable {
-    /// Creates a JWT by validating `string`'s UTF-8 bytes as the compact form.
     // swift-linter:disable:next throwing wrapper init
     // REASON: pure stdlib-interop type bridge — converts UTF-8 bytes to
     // `[Byte]` and forwards to the validating `ascii:` init, which owns the
     // invariant; no additional validation belongs here.
+    /// Creates a JWT by validating `string`'s UTF-8 bytes as the compact form.
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: [Byte](string.utf8))
     }
