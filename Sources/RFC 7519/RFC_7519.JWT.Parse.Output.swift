@@ -3,7 +3,7 @@
 //  swift-rfc-7519
 //
 
-public import Parser_Primitives
+import Parser_Primitives
 
 extension RFC_7519.JWT.Parse {
     public struct Output: Sendable {
