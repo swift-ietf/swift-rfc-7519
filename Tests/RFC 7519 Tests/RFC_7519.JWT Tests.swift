@@ -1,56 +1,32 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-rfc-7519 open source project
-//
-// Copyright (c) 2025 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 import Binary_Serializable_Primitives
 import Testing
 
 @testable import RFC_7519
 
-// [SWIFT-TEST-002] collision merge: RFC_7519.JWT already carries a `Test` suite
-// (declared in JWTSerializationEquivalenceTests.swift). No leftover distinguishing
-// token remained after stripping "JWT"/"Tests" from the former top-level suite name
-// `JWTTests`, so per the collision rule these members merge into the existing
-// `RFC_7519.JWT.Test` suite via extension (trivially disjoint — no name overlap
-// with the equivalence-guard test already hosted there).
 extension RFC_7519.JWT.Test {
-
-    // MARK: - JWT Parsing Tests
 
     @Test
     func `parse Valid JWT`() throws {
-        // Example JWT: {"alg":"HS256","typ":"JWT"}.{"sub":"1234567890","name":"John Doe","iat":1516239022}.signature
+
         let token =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
         let jwt = try RFC_7519.JWT(token)
 
-        // Header should be decoded JSON bytes
         let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
         #expect(headerString.contains("HS256"))
         #expect(headerString.contains("JWT"))
 
-        // Payload should be decoded JSON bytes
         let payloadString = String(decoding: jwt.payload.underlying, as: UTF8.self)
         #expect(payloadString.contains("1234567890"))
         #expect(payloadString.contains("John Doe"))
 
-        // Signature should be non-empty
         #expect(!jwt.signature.isEmpty)
     }
 
     @Test
     func `parse JWT With Empty Signature`() throws {
-        // Unsecured JWT with empty signature
+
         let token = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0."
 
         let jwt = try RFC_7519.JWT(token)
@@ -84,7 +60,7 @@ extension RFC_7519.JWT.Test {
 
     @Test
     func `parse JWT Invalid Base64URL In Header`() {
-        // @ is not valid Base64URL
+
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT("invalid@base64.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature")
         }
@@ -120,11 +96,9 @@ extension RFC_7519.JWT.Test {
         }
     }
 
-    // MARK: - JWT Serialization Tests
-
     @Test
     func `serialize JWT`() throws {
-        // Create a JWT from components
+
         let headerJSON = #"{"alg":"HS256","typ":"JWT"}"#
         let payloadJSON = #"{"sub":"test"}"#
         let signature: [Byte] = [0x01, 0x02, 0x03, 0x04]
@@ -135,14 +109,11 @@ extension RFC_7519.JWT.Test {
             signature: signature
         )
 
-        // Serialize to string
         let serialized = String(jwt)
 
-        // Should have three parts separated by dots
         let parts = serialized.split(separator: ".")
         #expect(parts.count == 3)
 
-        // Parse back and verify
         let parsed = try RFC_7519.JWT(serialized)
         #expect(parsed.header == jwt.header)
         #expect(parsed.payload == jwt.payload)
@@ -161,17 +132,12 @@ extension RFC_7519.JWT.Test {
             signature: signature
         )
 
-        // Serialize to bytes (Binary.Serializable [Byte] result + stdlib-interop
-        // [UInt8] forwarder both available; this site uses the [Byte] primary).
         let bytes: [Byte] = Array(jwt)
         #expect(!bytes.isEmpty)
 
-        // Should be valid ASCII
         let string = String(decoding: bytes.underlying, as: UTF8.self)
         #expect(string.split(separator: ".").count == 3)
     }
-
-    // MARK: - Round Trip Tests
 
     @Test
     func `round Trip Preserves Original Base64URL`() throws {
@@ -181,7 +147,6 @@ extension RFC_7519.JWT.Test {
         let jwt = try RFC_7519.JWT(originalToken)
         let serialized = String(jwt)
 
-        // Should be exactly the same
         #expect(serialized == originalToken)
     }
 
@@ -205,18 +170,15 @@ extension RFC_7519.JWT.Test {
         #expect(parsed.signature == jwt.signature)
     }
 
-    // MARK: - Signing Input Tests
-
     @Test
     func `signing Input Is Correct`() throws {
-        // Valid JWT with proper Base64URL signature
+
         let originalToken =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
 
         let jwt = try RFC_7519.JWT(originalToken)
         let signingInput = jwt.signingInput
 
-        // Signing input should be header.payload (without signature)
         let signingInputString = String(decoding: signingInput.underlying, as: UTF8.self)
         #expect(
             signingInputString == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0"
@@ -225,7 +187,7 @@ extension RFC_7519.JWT.Test {
 
     @Test
     func `signing Input Preserves Original Encoding`() throws {
-        // Valid JWT with proper Base64URL signature (c2lnbmF0dXJl is Base64URL for "signature")
+
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl"
 
         let jwt = try RFC_7519.JWT(token)
@@ -234,8 +196,6 @@ extension RFC_7519.JWT.Test {
 
         #expect(signingInputString == "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0")
     }
-
-    // MARK: - JWT Creation Tests
 
     @Test
     func `create JWT From Components`() throws {
@@ -278,7 +238,7 @@ extension RFC_7519.JWT.Test {
 
     @Test
     func `create JWT With Empty Signature Allowed`() throws {
-        // Empty signature is allowed for unsecured JWTs (alg: none)
+
         let jwt = try RFC_7519.JWT(
             header: [Byte](#"{"alg":"none"}"#.utf8),
             payload: [Byte](#"{"sub":"test"}"#.utf8),
@@ -287,8 +247,6 @@ extension RFC_7519.JWT.Test {
 
         #expect(jwt.signature.isEmpty)
     }
-
-    // MARK: - Equality Tests
 
     @Test
     func `jwt Equality`() throws {
@@ -311,8 +269,6 @@ extension RFC_7519.JWT.Test {
         #expect(jwt1 != jwt2)
     }
 
-    // MARK: - Error Description Tests
-
     @Test
     func `error Descriptions`() {
         let emptyError = RFC_7519.JWT.Error.empty
@@ -331,8 +287,6 @@ extension RFC_7519.JWT.Test {
         #expect(base64Error.description.contains("Base64URL"))
         #expect(base64Error.description.contains("header"))
     }
-
-    // MARK: - StringProtocol Init Tests
 
     @Test
     func `init From String`() throws {

@@ -1,18 +1,5 @@
-// ===----------------------------------------------------------------------===//
-//
-// This source file is part of the swift-rfc-7519 open source project
-//
-// Copyright (c) 2025 Coen ten Thije Boonkkamp
-// Licensed under Apache License v2.0
-//
-// See LICENSE.txt for license information
-//
-// SPDX-License-Identifier: Apache-2.0
-//
-// ===----------------------------------------------------------------------===//
-
 extension RFC_7519.JWT {
-    /// Errors during JWT parsing and validation
+
     public enum Error: Swift.Error, Sendable, Equatable, CustomStringConvertible {
         case empty
         case emptyHeader

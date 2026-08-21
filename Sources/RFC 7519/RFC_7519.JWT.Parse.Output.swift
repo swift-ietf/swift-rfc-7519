@@ -1,8 +1,3 @@
-//
-//  RFC_7519.JWT.Parse.Output.swift
-//  swift-rfc-7519
-//
-
 import Parser_Primitives
 
 extension RFC_7519.JWT.Parse {

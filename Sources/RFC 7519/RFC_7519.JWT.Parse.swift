@@ -1,18 +1,7 @@
-//
-//  RFC_7519.JWT.Parse.swift
-//  swift-rfc-7519
-//
-//  JWT Compact Serialization: base64url.base64url.base64url
-//
-
 public import Parser_Primitives
 
 extension RFC_7519.JWT {
-    /// Parses a JWT compact serialization per RFC 7519 Section 3.1.
-    ///
-    /// `compact = BASE64URL(header) "." BASE64URL(payload) "." BASE64URL(signature)`
-    ///
-    /// Returns three raw slices (Base64URL-encoded). Decoding is left to the caller.
+
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
         @inlinable
@@ -22,10 +11,7 @@ extension RFC_7519.JWT {
 
 extension RFC_7519.JWT.Parse: Parser.`Protocol` {
     public typealias Failure = __JWTParserError
-    /// Leaf parser: the `body` witness comes from the `Body == Never` default
-    /// ([API-IMPL-020]). `Parser.Protocol` gives `Failure` a `= Never` default
-    /// but gives `Body` none, so a generic leaf conformer that omits this fails
-    /// at link time with `Undefined symbols ... protocol witness for body.getter`.
+
     public typealias Body = Never
 
     @inlinable
@@ -35,7 +21,6 @@ extension RFC_7519.JWT.Parse: Parser.`Protocol` {
         let payload = try _consumeSegment(&input)
         try _expectPeriod(&input)
 
-        // Signature is the rest
         let signature = input[input.startIndex..<input.endIndex]
         input = input[input.endIndex...]
 
