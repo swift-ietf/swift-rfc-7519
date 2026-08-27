@@ -9,22 +9,22 @@ extension String {
 extension Target.Dependency {
     static var rfc7519: Self { .target(name: .rfc7519) }
     static var incits41986: Self {
-        .product(name: "ASCII Serializer Primitives", package: "swift-ascii-serializer-primitives")
+        .product(name: "ASCII Serializer", package: "swift-ascii-serializer")
     }
     static var standards: Self {
         .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
     }
     static var binary: Self {
-        .product(name: "Binary Primitives", package: "swift-binary-primitives")
+        .product(name: "Binary", package: "swift-binary")
     }
     static var binarySerializable: Self {
         .product(
-            name: "Binary Serializable Primitives",
-            package: "swift-binary-serializer-primitives"
+            name: "Binary Serializable",
+            package: "swift-binary-serializer"
         )
     }
     static var parseableASCII: Self {
-        .product(name: "Parseable ASCII Primitives", package: "swift-ascii-parser-primitives")
+        .product(name: "Parseable ASCII", package: "swift-ascii-parser")
     }
     static var rfc4648: Self { .product(name: "RFC 4648", package: "swift-rfc-4648") }
 }
@@ -46,32 +46,32 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/swift-primitives/swift-ascii-serializer-primitives.git",
+            url: "https://github.com/swift-molecules/swift-ascii-serializer.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-binary-serializer-primitives.git",
+            url: "https://github.com/swift-molecules/swift-binary-serializer.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-ascii-parser-primitives.git",
+            url: "https://github.com/swift-molecules/swift-ascii-parser.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-standard-library-extensions.git",
+            url: "https://github.com/swift-molecules/swift-standard-library-extensions.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-binary-primitives.git",
+            url: "https://github.com/swift-molecules/swift-binary.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-byte-primitives.git",
+            url: "https://github.com/swift-molecules/swift-byte.git",
             branch: "main"
         ),
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-primitives/swift-parser-primitives.git",
+            url: "https://github.com/swift-molecules/swift-parser.git",
             branch: "main"
         ),
     ],
@@ -85,7 +85,7 @@ let package = Package(
                 .standards,
                 .binary,
                 .rfc4648,
-                .product(name: "Parser Primitives", package: "swift-parser-primitives"),
+                .product(name: "Parser", package: "swift-parser"),
             ]
         ),
         .target(
@@ -93,8 +93,8 @@ let package = Package(
             dependencies: [
                 "RFC 7519",
                 .product(
-                    name: "Byte Primitives Standard Library Integration",
-                    package: "swift-byte-primitives"
+                    name: "Byte Standard Library Integration",
+                    package: "swift-byte"
                 ),
             ]
         ),

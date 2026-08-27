@@ -1,4 +1,4 @@
-import Parser_Primitives
+import Parser
 
 extension RFC_7519.JWT.Parse {
     public struct Output: Sendable {

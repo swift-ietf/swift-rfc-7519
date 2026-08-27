@@ -1,4 +1,4 @@
-internal import Byte_Primitives
+internal import Byte
 public import RFC_7519
 
 extension RFC_7519.JWT {
