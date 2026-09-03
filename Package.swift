@@ -2,33 +2,6 @@
 
 import PackageDescription
 
-extension String {
-    static let rfc7519: Self = "RFC 7519"
-}
-
-extension Target.Dependency {
-    static var rfc7519: Self { .target(name: .rfc7519) }
-    static var incits41986: Self {
-        .product(name: "ASCII Serializer", package: "swift-ascii-serializer")
-    }
-    static var standards: Self {
-        .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions")
-    }
-    static var binary: Self {
-        .product(name: "Binary", package: "swift-binary")
-    }
-    static var binarySerializable: Self {
-        .product(
-            name: "Binary Serializable",
-            package: "swift-binary-serializer"
-        )
-    }
-    static var parseableASCII: Self {
-        .product(name: "Parseable ASCII", package: "swift-ascii-parser")
-    }
-    static var rfc4648: Self { .product(name: "RFC 4648", package: "swift-rfc-4648") }
-}
-
 let package = Package(
     name: "swift-rfc-7519",
     platforms: [
@@ -79,19 +52,19 @@ let package = Package(
         .target(
             name: "RFC 7519",
             dependencies: [
-                .incits41986,
-                .binarySerializable,
-                .parseableASCII,
-                .standards,
-                .binary,
-                .rfc4648,
+                .product(name: "ASCII Serializer", package: "swift-ascii-serializer"),
+                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
+                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
+                .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
+                .product(name: "Binary", package: "swift-binary"),
+                .product(name: "RFC 4648", package: "swift-rfc-4648"),
                 .product(name: "Parser", package: "swift-parser"),
             ]
         ),
         .target(
             name: "RFC 7519 Standard Library Integration",
             dependencies: [
-                "RFC 7519",
+                .target(name: "RFC 7519"),
                 .product(
                     name: "Byte Standard Library Integration",
                     package: "swift-byte"
@@ -101,23 +74,19 @@ let package = Package(
         .testTarget(
             name: "RFC 7519 Tests",
             dependencies: [
-                "RFC 7519"
+                .target(name: "RFC 7519")
             ]
         ),
         .testTarget(
             name: "RFC 7519 Standard Library Integration Tests",
             dependencies: [
-                "RFC 7519",
-                "RFC 7519 Standard Library Integration",
+                .target(name: "RFC 7519"),
+                .target(name: "RFC 7519 Standard Library Integration"),
             ]
         ),
     ],
     swiftLanguageModes: [.v6]
 )
-
-extension String {
-    var tests: Self { self + " Tests" }
-}
 
 for target in package.targets where ![.system, .binary, .plugin, .macro].contains(target.type) {
     let ecosystem: [SwiftSetting] = [
