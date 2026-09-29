@@ -42,8 +42,8 @@ extension RFC_7519 {
                 throw Error.emptyPayload
             }
 
-            let headerBase64URL = [Byte](RFC_4648.Base64.URL.encode(header))
-            let payloadBase64URL = [Byte](RFC_4648.Base64.URL.encode(payload))
+            let headerBase64URL = RFC_4648.Base64.URL.encode(header).map(\.byte)
+            let payloadBase64URL = RFC_4648.Base64.URL.encode(payload).map(\.byte)
 
             self.init(
 
@@ -66,7 +66,7 @@ extension RFC_7519.JWT {
         result.reserveCapacity(headerBase64URL.count + 1 + payloadBase64URL.count)
         result.append(contentsOf: headerBase64URL)
 
-        result.append(ASCII.Code.period)
+        result.append(ASCII.Code.period.byte)
         result.append(contentsOf: payloadBase64URL)
         return result
     }
@@ -75,7 +75,7 @@ extension RFC_7519.JWT {
 extension RFC_7519.JWT: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
-        try self.init(ascii: [Byte](string.utf8))
+        try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
     public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
@@ -83,7 +83,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
 
         let arr: [ASCII.Code]
         do throws(ASCII.Code.Error) {
-            arr = try [ASCII.Code](bytes)
+            arr = try bytes.map { byte throws(ASCII.Code.Error) in try ASCII.Code(byte) }
         } catch {
             throw Error.invalidFormat(String(decoding: bytes, as: UTF8.self))
         }
@@ -100,13 +100,13 @@ extension RFC_7519.JWT: ASCII.Parseable {
                     secondPeriodIndex = index
                 } else {
 
-                    throw Error.invalidFormat(String(decoding: arr, as: UTF8.self))
+                    throw Error.invalidFormat(String(ascii: arr))
                 }
             }
         }
 
         guard let first = firstPeriodIndex, let second = secondPeriodIndex else {
-            throw Error.invalidFormat(String(decoding: arr, as: UTF8.self))
+            throw Error.invalidFormat(String(ascii: arr))
         }
 
         let headerBase64URLCodes = Array(arr[..<first])
@@ -118,7 +118,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         }
         guard let header = RFC_4648.Base64.URL.decode(headerBase64URLCodes) else {
             throw Error.invalidBase64URL(
-                String(decoding: headerBase64URLCodes, as: UTF8.self),
+                String(ascii: headerBase64URLCodes),
                 component: "header"
             )
         }
@@ -128,7 +128,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         }
         guard let payload = RFC_4648.Base64.URL.decode(payloadBase64URLCodes) else {
             throw Error.invalidBase64URL(
-                String(decoding: payloadBase64URLCodes, as: UTF8.self),
+                String(ascii: payloadBase64URLCodes),
                 component: "payload"
             )
         }
@@ -139,7 +139,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         } else {
             guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URLCodes) else {
                 throw Error.invalidBase64URL(
-                    String(decoding: signatureBase64URLCodes, as: UTF8.self),
+                    String(ascii: signatureBase64URLCodes),
                     component: "signature"
                 )
             }
@@ -152,8 +152,8 @@ extension RFC_7519.JWT: ASCII.Parseable {
             header: header,
             payload: payload,
             signature: signature,
-            headerBase64URL: [Byte](headerBase64URLCodes),
-            payloadBase64URL: [Byte](payloadBase64URLCodes)
+            headerBase64URL: headerBase64URLCodes.map(\.byte),
+            payloadBase64URL: payloadBase64URLCodes.map(\.byte)
         )
     }
 }
@@ -185,20 +185,20 @@ extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
     ) where Buffer.Element == Byte {
 
         buffer.append(contentsOf: jwt.headerBase64URL)
-        buffer.append(ASCII.Code.period)
+        buffer.append(ASCII.Code.period.byte)
         buffer.append(contentsOf: jwt.payloadBase64URL)
-        buffer.append(ASCII.Code.period)
+        buffer.append(ASCII.Code.period.byte)
 
         var signatureEncoded: [ASCII.Code] = []
         RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
-        buffer.append(contentsOf: signatureEncoded)
+        buffer.append(contentsOf: signatureEncoded.map(\.byte))
     }
 }
 
 extension RFC_7519.JWT: Swift.RawRepresentable {
 
     public var rawValue: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 
     public init?(rawValue: String) {
@@ -213,7 +213,7 @@ extension RFC_7519.JWT: Swift.RawRepresentable {
 extension RFC_7519.JWT: CustomStringConvertible {
 
     public var description: String {
-        String(decoding: serialized.underlying, as: UTF8.self)
+        String(decoding: serialized, as: UTF8.self)
     }
 }
 

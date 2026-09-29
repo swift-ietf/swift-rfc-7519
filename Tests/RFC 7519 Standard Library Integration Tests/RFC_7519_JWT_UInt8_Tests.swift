@@ -18,9 +18,9 @@ extension RFC_7519.JWT {
                 signature: signatureU8
             )
 
-            #expect(jwt.header == [Byte](headerU8))
-            #expect(jwt.payload == [Byte](payloadU8))
-            #expect(jwt.signature == [Byte](signatureU8))
+            #expect(jwt.header == headerU8.map(Byte.init(bitPattern:)))
+            #expect(jwt.payload == payloadU8.map(Byte.init(bitPattern:)))
+            #expect(jwt.signature == signatureU8.map(Byte.init(bitPattern:)))
         }
     }
 }

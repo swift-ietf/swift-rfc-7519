@@ -13,11 +13,11 @@ extension RFC_7519.JWT.Test {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
+        let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))
         #expect(headerString.contains("JWT"))
 
-        let payloadString = String(decoding: jwt.payload.underlying, as: UTF8.self)
+        let payloadString = String(decoding: jwt.payload, as: UTF8.self)
         #expect(payloadString.contains("1234567890"))
         #expect(payloadString.contains("John Doe"))
 
@@ -31,7 +31,7 @@ extension RFC_7519.JWT.Test {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
+        let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("none"))
 
         #expect(jwt.signature.isEmpty)
@@ -101,11 +101,11 @@ extension RFC_7519.JWT.Test {
 
         let headerJSON = #"{"alg":"HS256","typ":"JWT"}"#
         let payloadJSON = #"{"sub":"test"}"#
-        let signature: [Byte] = [0x01, 0x02, 0x03, 0x04]
+        let signature: [Byte] = [Byte(0x01), Byte(0x02), Byte(0x03), Byte(0x04)]
 
         let jwt = try RFC_7519.JWT(
-            header: [Byte](headerJSON.utf8),
-            payload: [Byte](payloadJSON.utf8),
+            header: [Byte](utf8: headerJSON),
+            payload: [Byte](utf8: payloadJSON),
             signature: signature
         )
 
@@ -124,18 +124,18 @@ extension RFC_7519.JWT.Test {
     func `serialize To Bytes`() throws {
         let headerJSON = #"{"alg":"HS256"}"#
         let payloadJSON = #"{"sub":"user"}"#
-        let signature: [Byte] = [0xDE, 0xAD, 0xBE, 0xEF]
+        let signature: [Byte] = [Byte(0xDE), Byte(0xAD), Byte(0xBE), Byte(0xEF)]
 
         let jwt = try RFC_7519.JWT(
-            header: [Byte](headerJSON.utf8),
-            payload: [Byte](payloadJSON.utf8),
+            header: [Byte](utf8: headerJSON),
+            payload: [Byte](utf8: payloadJSON),
             signature: signature
         )
 
         let bytes: [Byte] = Array(jwt)
         #expect(!bytes.isEmpty)
 
-        let string = String(decoding: bytes.underlying, as: UTF8.self)
+        let string = String(decoding: bytes, as: UTF8.self)
         #expect(string.split(separator: ".").count == 3)
     }
 
@@ -154,11 +154,11 @@ extension RFC_7519.JWT.Test {
     func `round Trip With Newly Created JWT`() throws {
         let headerJSON = #"{"alg":"RS256","kid":"key1"}"#
         let payloadJSON = #"{"iss":"test","sub":"user123"}"#
-        let signature: [Byte] = Array(repeating: 0xAB, count: 32)
+        let signature: [Byte] = Array(repeating: Byte(0xAB), count: 32)
 
         let jwt = try RFC_7519.JWT(
-            header: [Byte](headerJSON.utf8),
-            payload: [Byte](payloadJSON.utf8),
+            header: [Byte](utf8: headerJSON),
+            payload: [Byte](utf8: payloadJSON),
             signature: signature
         )
 
@@ -179,7 +179,7 @@ extension RFC_7519.JWT.Test {
         let jwt = try RFC_7519.JWT(originalToken)
         let signingInput = jwt.signingInput
 
-        let signingInputString = String(decoding: signingInput.underlying, as: UTF8.self)
+        let signingInputString = String(decoding: signingInput, as: UTF8.self)
         #expect(
             signingInputString == "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0"
         )
@@ -192,16 +192,16 @@ extension RFC_7519.JWT.Test {
 
         let jwt = try RFC_7519.JWT(token)
         let signingInput = jwt.signingInput
-        let signingInputString = String(decoding: signingInput.underlying, as: UTF8.self)
+        let signingInputString = String(decoding: signingInput, as: UTF8.self)
 
         #expect(signingInputString == "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0")
     }
 
     @Test
     func `create JWT From Components`() throws {
-        let header: [Byte] = [Byte](#"{"alg":"HS256"}"#.utf8)
-        let payload: [Byte] = [Byte](#"{"sub":"123"}"#.utf8)
-        let signature: [Byte] = [0x01, 0x02, 0x03]
+        let header: [Byte] = [Byte](utf8: #"{"alg":"HS256"}"#)
+        let payload: [Byte] = [Byte](utf8: #"{"sub":"123"}"#)
+        let signature: [Byte] = [Byte(0x01), Byte(0x02), Byte(0x03)]
 
         let jwt = try RFC_7519.JWT(
             header: header,
@@ -219,8 +219,8 @@ extension RFC_7519.JWT.Test {
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT(
                 header: [Byte](),
-                payload: [Byte](#"{"sub":"test"}"#.utf8),
-                signature: [0x01]
+                payload: [Byte](utf8: #"{"sub":"test"}"#),
+                signature: [Byte(0x01)]
             )
         }
     }
@@ -229,9 +229,9 @@ extension RFC_7519.JWT.Test {
     func `create JWT With Empty Payload Throws`() {
         #expect(throws: RFC_7519.JWT.Error.self) {
             _ = try RFC_7519.JWT(
-                header: [Byte](#"{"alg":"HS256"}"#.utf8),
+                header: [Byte](utf8: #"{"alg":"HS256"}"#),
                 payload: [Byte](),
-                signature: [0x01]
+                signature: [Byte(0x01)]
             )
         }
     }
@@ -240,8 +240,8 @@ extension RFC_7519.JWT.Test {
     func `create JWT With Empty Signature Allowed`() throws {
 
         let jwt = try RFC_7519.JWT(
-            header: [Byte](#"{"alg":"none"}"#.utf8),
-            payload: [Byte](#"{"sub":"test"}"#.utf8),
+            header: [Byte](utf8: #"{"alg":"none"}"#),
+            payload: [Byte](utf8: #"{"sub":"test"}"#),
             signature: []
         )
 
@@ -294,7 +294,7 @@ extension RFC_7519.JWT.Test {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
+        let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))
     }
 
@@ -305,7 +305,7 @@ extension RFC_7519.JWT.Test {
 
         let jwt = try RFC_7519.JWT(token)
 
-        let headerString = String(decoding: jwt.header.underlying, as: UTF8.self)
+        let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))
     }
 }

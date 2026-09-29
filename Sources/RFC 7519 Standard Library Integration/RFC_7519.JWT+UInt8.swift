@@ -11,9 +11,9 @@ extension RFC_7519.JWT {
         signature: [UInt8]
     ) throws(Error) {
         try self.init(
-            header: [Byte](header),
-            payload: [Byte](payload),
-            signature: [Byte](signature)
+            header: header.map(Byte.init(bitPattern:)),
+            payload: payload.map(Byte.init(bitPattern:)),
+            signature: signature.map(Byte.init(bitPattern:))
         )
     }
 }

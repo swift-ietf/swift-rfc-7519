@@ -12,9 +12,9 @@ extension RFC_7519.JWT {
         {
 
             let jwt = try RFC_7519.JWT(
-                header: [0xFF, 0xFF, 0xBF],
-                payload: [0xFB, 0xF0],
-                signature: [0xFF, 0xEF, 0xFB]
+                header: [Byte(0xFF), Byte(0xFF), Byte(0xBF)],
+                payload: [Byte(0xFB), Byte(0xF0)],
+                signature: [Byte(0xFF), Byte(0xEF), Byte(0xFB)]
             )
 
             let viaASCII: [Byte] = jwt.serialized
@@ -24,7 +24,7 @@ extension RFC_7519.JWT {
 
             #expect(viaASCII == viaBinary)
 
-            let text = String(decoding: viaASCII.underlying, as: UTF8.self)
+            let text = String(decoding: viaASCII, as: UTF8.self)
             #expect(text.contains("-"))
             #expect(text.contains("_"))
         }
