@@ -9,6 +9,7 @@ let package = Package(
         .iOS(.v27),
         .tvOS(.v27),
         .watchOS(.v27),
+        .visionOS(.v27),
     ],
     products: [
         .library(name: "RFC 7519", targets: ["RFC 7519"]),
@@ -32,7 +33,7 @@ let package = Package(
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-parser.git",
-            branch: "main"
+            branch: "main", traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip"]
         ),
         .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
     ],
