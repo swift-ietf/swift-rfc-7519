@@ -19,46 +19,32 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/swift-molecules/swift-ascii-serializer.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-binary-serializer.git",
-            branch: "main"
-        ),
-        .package(
-            url: "https://github.com/swift-molecules/swift-ascii-parser.git",
-            branch: "main"
-        ),
-        .package(
             url: "https://github.com/swift-atoms/swift-standard-library-extensions.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-molecules/swift-binary.git",
-            branch: "main"
-        ),
+            url: "https://github.com/swift-atoms/swift-binary.git",
+            branch: "main", traits: ["Serializer"]),
         .package(
-            url: "https://github.com/swift-molecules/swift-byte.git",
+            url: "https://github.com/swift-atoms/swift-byte.git",
             branch: "main"
         ),
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
         .package(
-            url: "https://github.com/swift-molecules/swift-parser.git",
+            url: "https://github.com/swift-atoms/swift-parser.git",
             branch: "main"
         ),
+        .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
     ],
     targets: [
         .target(
             name: "RFC 7519",
             dependencies: [
-                .product(name: "ASCII Serializer", package: "swift-ascii-serializer"),
-                .product(name: "Binary Serializable", package: "swift-binary-serializer"),
-                .product(name: "Parseable ASCII", package: "swift-ascii-parser"),
                 .product(name: "Standard Library Extensions", package: "swift-standard-library-extensions"),
                 .product(name: "Binary", package: "swift-binary"),
                 .product(name: "RFC 4648", package: "swift-rfc-4648"),
                 .product(name: "Parser", package: "swift-parser"),
+                .product(name: "ASCII", package: "swift-ascii"),
             ]
         ),
         .target(
@@ -66,7 +52,7 @@ let package = Package(
             dependencies: [
                 .target(name: "RFC 7519"),
                 .product(
-                    name: "Byte Standard Library Integration",
+                    name: "Byte",
                     package: "swift-byte"
                 ),
             ]
@@ -74,7 +60,8 @@ let package = Package(
         .testTarget(
             name: "RFC 7519 Tests",
             dependencies: [
-                .target(name: "RFC 7519")
+                .target(name: "RFC 7519"),
+                .product(name: "Binary", package: "swift-binary"),
             ]
         ),
         .testTarget(

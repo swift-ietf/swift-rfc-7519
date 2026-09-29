@@ -9,7 +9,7 @@ extension RFC_7519.JWT {
     }
 }
 
-extension RFC_7519.JWT.Parse: Parser.`Protocol` {
+extension RFC_7519.JWT.Parse: Parsing {
     public typealias Failure = __JWTParserError
 
     public typealias Body = Never

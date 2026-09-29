@@ -1,6 +1,5 @@
-public import ASCII_Serializer
-public import Binary_Serializable
-public import Parseable_ASCII
+public import ASCII
+public import Binary
 
 extension RFC_7519 {
 
