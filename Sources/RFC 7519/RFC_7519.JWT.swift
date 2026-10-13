@@ -78,7 +78,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
     }
 
-    public init<Bytes: Swift.Collection>(ascii bytes: Bytes) throws(Error)
+    public init<Bytes: Swift::Collection>(ascii bytes: Bytes) throws(Error)
     where Bytes.Element == Byte {
 
         let arr: [ASCII.Code]
@@ -195,7 +195,7 @@ extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
     }
 }
 
-extension RFC_7519.JWT: Swift.RawRepresentable {
+extension RFC_7519.JWT: Swift::RawRepresentable {
 
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)

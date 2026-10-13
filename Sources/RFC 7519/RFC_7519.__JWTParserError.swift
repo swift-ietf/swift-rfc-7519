@@ -1,4 +1,4 @@
-public enum __JWTParserError: Swift.Error, Sendable, Equatable {
+public enum __JWTParserError: Swift::Error, Sendable, Equatable {
 
     case expectedPeriod
 

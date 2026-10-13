@@ -1,6 +1,6 @@
 extension RFC_7519.JWT {
 
-    public enum Error: Swift.Error, Sendable, Equatable, CustomStringConvertible {
+    public enum Error: Swift::Error, Sendable, Equatable, CustomStringConvertible {
         case empty
         case emptyHeader
         case emptyPayload
