@@ -8,8 +8,7 @@ extension RFC_7519.JWT {
     struct Test {
 
         @Test
-        func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws
-        {
+        func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
 
             let jwt = try RFC_7519.JWT(
                 header: [Byte(0xFF), Byte(0xFF), Byte(0xBF)],

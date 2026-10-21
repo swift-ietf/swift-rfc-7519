@@ -25,7 +25,9 @@ let package = Package(
         ),
         .package(
             url: "https://github.com/swift-atoms/swift-binary.git",
-            branch: "main", traits: ["Serializer"]),
+            branch: "main",
+            traits: ["Serializer"]
+        ),
         .package(
             url: "https://github.com/swift-atoms/swift-byte.git",
             branch: "main"
@@ -33,7 +35,8 @@ let package = Package(
         .package(url: "https://github.com/swift-ietf/swift-rfc-4648.git", branch: "main"),
         .package(
             url: "https://github.com/swift-atoms/swift-parser.git",
-            branch: "main", traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip", "Either", "Iterator", "Collection"]
+            branch: "main",
+            traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip", "Either", "Iterator", "Collection"]
         ),
         .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
     ],
@@ -77,14 +80,15 @@ let package = Package(
 )
 
 for target in package.targets where ![.system, .binary, .plugin, .macro].contains(target.type) {
-    target.swiftSettings = (target.swiftSettings ?? []) + [
-        .strictMemorySafety(),
-        .enableUpcomingFeature("ExistentialAny"),
-        .enableUpcomingFeature("InternalImportsByDefault"),
-        .enableUpcomingFeature("MemberImportVisibility"),
-        .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
-        .enableUpcomingFeature("InferIsolatedConformances"),
-        .enableExperimentalFeature("Lifetimes"),
-        .treatAllWarnings(as: .error),
-    ]
+    target.swiftSettings =
+        (target.swiftSettings ?? []) + [
+            .strictMemorySafety(),
+            .enableUpcomingFeature("ExistentialAny"),
+            .enableUpcomingFeature("InternalImportsByDefault"),
+            .enableUpcomingFeature("MemberImportVisibility"),
+            .enableUpcomingFeature("NonisolatedNonsendingByDefault"),
+            .enableUpcomingFeature("InferIsolatedConformances"),
+            .enableExperimentalFeature("Lifetimes"),
+            .treatAllWarnings(as: .error),
+        ]
 }
