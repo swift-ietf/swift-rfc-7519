@@ -18,6 +18,12 @@ let package = Package(
             targets: ["RFC 7519 Standard Library Integration"]
         ),
     ],
+    traits: [
+        .trait(
+            name: "RFC7519StandardLibraryIntegration",
+            description: "RFC 7519 Standard Library Integration and the dependencies only it needs"
+        ),
+    ],
     dependencies: [
         .package(
             url: "https://github.com/swift-atoms/swift-standard-library-extensions.git",
@@ -39,12 +45,6 @@ let package = Package(
             traits: ["Append", "IteratorLeaves", "Map", "Product", "Skip", "Either", "Iterator", "Collection"]
         ),
         .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
-    ],
-    traits: [
-        .trait(
-            name: "RFC7519StandardLibraryIntegration",
-            description: "RFC 7519 Standard Library Integration and the dependencies only it needs"
-        ),
     ],
     targets: [
         .target(
