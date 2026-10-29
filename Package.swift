@@ -40,6 +40,12 @@ let package = Package(
         ),
         .package(url: "https://github.com/swift-atoms/swift-ascii.git", branch: "main", traits: ["Parser", "Serializer"]),
     ],
+    traits: [
+        .trait(
+            name: "RFC7519StandardLibraryIntegration",
+            description: "RFC 7519 Standard Library Integration and the dependencies only it needs"
+        ),
+    ],
     targets: [
         .target(
             name: "RFC 7519",
@@ -57,7 +63,8 @@ let package = Package(
                 .target(name: "RFC 7519"),
                 .product(
                     name: "Byte",
-                    package: "swift-byte"
+                    package: "swift-byte",
+                    condition: .when(traits: ["RFC7519StandardLibraryIntegration"])
                 ),
             ]
         ),
