@@ -3,7 +3,7 @@ import Testing
 
 @testable import RFC_7519
 
-extension RFC_7519.JWT.Test {
+extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `parse Valid JWT`() throws {

@@ -2,7 +2,9 @@ import RFC_7519
 import RFC_7519_Standard_Library_Integration
 import Testing
 
-extension RFC_7519.JWT {
+enum `RFC_7519.JWT Tests` {}
+
+extension `RFC_7519.JWT Tests` {
     @Suite("RFC 7519 JWT UInt8 forwarder")
     struct Test {
         @Test

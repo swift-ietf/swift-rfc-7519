@@ -3,7 +3,9 @@ import Testing
 
 @testable import RFC_7519
 
-extension RFC_7519.JWT {
+enum `RFC_7519.JWT Tests` {}
+
+extension `RFC_7519.JWT Tests` {
     @Suite
     struct Test {
 
