@@ -22,6 +22,11 @@ extension RFC_7519.JWT.Parse: Parsing {
         let payload = try _consumeSegment(&input)
         try _expectPeriod(&input)
 
+        var index = input.startIndex
+        while index < input.endIndex {
+            guard input[index] != 0x2E else { throw .unexpectedPeriod }
+            input.formIndex(after: &index)
+        }
         let signature = input[input.startIndex..<input.endIndex]
         input = input[input.endIndex...]
 
