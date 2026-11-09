@@ -99,8 +99,20 @@ extension `RFC_7519.JWT Tests`.Test {
         "a.b.c.d",
     ])
     func `byte Parser And Text Parser Agree On Segment Structure`(token: String) {
-        let byteAccepts = (try? byteParse(token)) != nil
-        let textAccepts = (try? RFC_7519.JWT(token)) != nil
+        let byteAccepts: Bool
+        do throws(RFC_7519.JWT.Parse<Bytes>.Error) {
+            _ = try byteParse(token)
+            byteAccepts = true
+        } catch {
+            byteAccepts = false
+        }
+        let textAccepts: Bool
+        do throws(RFC_7519.JWT.Error) {
+            _ = try RFC_7519.JWT(token)
+            textAccepts = true
+        } catch {
+            textAccepts = false
+        }
 
         #expect(byteAccepts == textAccepts)
     }
