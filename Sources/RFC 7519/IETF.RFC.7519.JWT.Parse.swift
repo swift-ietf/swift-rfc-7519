@@ -1,6 +1,6 @@
 public import Parser
 
-extension RFC_7519.JWT {
+extension IETF.RFC.`7519`.JWT {
 
     public struct Parse<Input: Collection.Slice.`Protocol`>: Sendable
     where Input: Sendable, Input.Element == UInt8 {
@@ -9,7 +9,7 @@ extension RFC_7519.JWT {
     }
 }
 
-extension RFC_7519.JWT.Parse: Parsing {
+extension IETF.RFC.`7519`.JWT.Parse: Parsing {
 
     public typealias Failure = __JWTParserError
 

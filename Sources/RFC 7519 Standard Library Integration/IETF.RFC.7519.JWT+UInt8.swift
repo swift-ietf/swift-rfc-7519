@@ -2,7 +2,7 @@
     internal import Byte
     public import RFC_7519
 
-    extension RFC_7519.JWT {
+    extension IETF.RFC.`7519`.JWT {
 
         @_disfavoredOverload
 

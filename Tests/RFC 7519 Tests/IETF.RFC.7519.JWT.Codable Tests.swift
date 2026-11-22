@@ -3,12 +3,12 @@ import Testing
 
 @testable import RFC_7519
 
-extension `RFC_7519.JWT Tests`.Test {
+extension `IETF.RFC.7519.JWT Tests`.Test {
 
     @Test
     func `codable Encodes Compact Text`() throws {
         let token = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0.AQID"
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
 
         let data = try JSONEncoder().encode([jwt])
 
@@ -17,13 +17,13 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `codable Round Trips`() throws {
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: [Byte](utf8: #"{"alg":"none"}"#),
             payload: [Byte](utf8: #"{"sub":"test"}"#),
             signature: [Byte(0x01), Byte(0x02), Byte(0x03)]
         )
 
-        let decoded = try JSONDecoder().decode([RFC_7519.JWT].self, from: JSONEncoder().encode([jwt]))
+        let decoded = try JSONDecoder().decode([IETF.RFC.`7519`.JWT].self, from: JSONEncoder().encode([jwt]))
 
         #expect(decoded == [jwt])
     }
@@ -33,7 +33,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let data = Data(#"[".eyJzdWIiOiJ0ZXN0In0.AQID"]"#.utf8)
 
         #expect(throws: DecodingError.self) {
-            _ = try JSONDecoder().decode([RFC_7519.JWT].self, from: data)
+            _ = try JSONDecoder().decode([IETF.RFC.`7519`.JWT].self, from: data)
         }
     }
 
@@ -42,7 +42,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let data = Data(#"["eyJhbGciOiJub25lIn0..AQID"]"#.utf8)
 
         #expect(throws: DecodingError.self) {
-            _ = try JSONDecoder().decode([RFC_7519.JWT].self, from: data)
+            _ = try JSONDecoder().decode([IETF.RFC.`7519`.JWT].self, from: data)
         }
     }
 
@@ -51,7 +51,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let data = Data(#"[{"header":[1],"payload":[1],"signature":[]}]"#.utf8)
 
         #expect(throws: DecodingError.self) {
-            _ = try JSONDecoder().decode([RFC_7519.JWT].self, from: data)
+            _ = try JSONDecoder().decode([IETF.RFC.`7519`.JWT].self, from: data)
         }
     }
 }

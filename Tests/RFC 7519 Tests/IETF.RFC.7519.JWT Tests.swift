@@ -3,7 +3,7 @@ import Testing
 
 @testable import RFC_7519
 
-extension `RFC_7519.JWT Tests`.Test {
+extension `IETF.RFC.7519.JWT Tests`.Test {
 
     @Test
     func `parse Valid JWT`() throws {
@@ -11,7 +11,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let token =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
 
         let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))
@@ -29,7 +29,7 @@ extension `RFC_7519.JWT Tests`.Test {
 
         let token = "eyJhbGciOiJub25lIn0.eyJzdWIiOiJ0ZXN0In0."
 
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
 
         let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("none"))
@@ -39,44 +39,44 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `parse JWT Invalid Format Too Few Parts`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("invalid.token")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("invalid.token")
         }
     }
 
     @Test
     func `parse JWT Invalid Format Too Many Parts`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("too.many.parts.here")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("too.many.parts.here")
         }
     }
 
     @Test
     func `parse JWT Empty`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("")
         }
     }
 
     @Test
     func `parse JWT Invalid Base64URL In Header`() {
 
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("invalid@base64.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("invalid@base64.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature")
         }
     }
 
     @Test
     func `parse JWT Invalid Base64URL In Payload`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("eyJhbGciOiJIUzI1NiJ9.invalid@base64.signature")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("eyJhbGciOiJIUzI1NiJ9.invalid@base64.signature")
         }
     }
 
     @Test
     func `parse JWT Invalid Base64URL In Signature`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT(
                 "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.invalid@base64"
             )
         }
@@ -84,15 +84,15 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `parse JWT Empty Header`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(".eyJzdWIiOiJ0ZXN0In0.sig")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT(".eyJzdWIiOiJ0ZXN0In0.sig")
         }
     }
 
     @Test
     func `parse JWT Empty Payload`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT("eyJhbGciOiJIUzI1NiJ9..sig")
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT("eyJhbGciOiJIUzI1NiJ9..sig")
         }
     }
 
@@ -103,7 +103,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let payloadJSON = #"{"sub":"test"}"#
         let signature: [Byte] = [Byte(0x01), Byte(0x02), Byte(0x03), Byte(0x04)]
 
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: [Byte](utf8: headerJSON),
             payload: [Byte](utf8: payloadJSON),
             signature: signature
@@ -114,7 +114,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let parts = serialized.split(separator: ".")
         #expect(parts.count == 3)
 
-        let parsed = try RFC_7519.JWT(serialized)
+        let parsed = try IETF.RFC.`7519`.JWT(serialized)
         #expect(parsed.header == jwt.header)
         #expect(parsed.payload == jwt.payload)
         #expect(parsed.signature == jwt.signature)
@@ -126,7 +126,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let payloadJSON = #"{"sub":"user"}"#
         let signature: [Byte] = [Byte(0xDE), Byte(0xAD), Byte(0xBE), Byte(0xEF)]
 
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: [Byte](utf8: headerJSON),
             payload: [Byte](utf8: payloadJSON),
             signature: signature
@@ -144,7 +144,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let originalToken =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
 
-        let jwt = try RFC_7519.JWT(originalToken)
+        let jwt = try IETF.RFC.`7519`.JWT(originalToken)
         let serialized = String(jwt)
 
         #expect(serialized == originalToken)
@@ -156,14 +156,14 @@ extension `RFC_7519.JWT Tests`.Test {
         let payloadJSON = #"{"iss":"test","sub":"user123"}"#
         let signature: [Byte] = Array(repeating: Byte(0xAB), count: 32)
 
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: [Byte](utf8: headerJSON),
             payload: [Byte](utf8: payloadJSON),
             signature: signature
         )
 
         let serialized = String(jwt)
-        let parsed = try RFC_7519.JWT(serialized)
+        let parsed = try IETF.RFC.`7519`.JWT(serialized)
 
         #expect(parsed.header == jwt.header)
         #expect(parsed.payload == jwt.payload)
@@ -176,7 +176,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let originalToken =
             "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.dozjgNryP4J3jVmNHl0w5N_XgL0n3I9PlFUP0THsR8U"
 
-        let jwt = try RFC_7519.JWT(originalToken)
+        let jwt = try IETF.RFC.`7519`.JWT(originalToken)
         let signingInput = jwt.signingInput
 
         let signingInputString = String(decoding: signingInput, as: UTF8.self)
@@ -190,7 +190,7 @@ extension `RFC_7519.JWT Tests`.Test {
 
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl"
 
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
         let signingInput = jwt.signingInput
         let signingInputString = String(decoding: signingInput, as: UTF8.self)
 
@@ -203,7 +203,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let payload: [Byte] = [Byte](utf8: #"{"sub":"123"}"#)
         let signature: [Byte] = [Byte(0x01), Byte(0x02), Byte(0x03)]
 
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: header,
             payload: payload,
             signature: signature
@@ -216,8 +216,8 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `create JWT With Empty Header Throws`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT(
                 header: [Byte](),
                 payload: [Byte](utf8: #"{"sub":"test"}"#),
                 signature: [Byte(0x01)]
@@ -227,8 +227,8 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `create JWT With Empty Payload Throws`() {
-        #expect(throws: RFC_7519.JWT.Error.self) {
-            _ = try RFC_7519.JWT(
+        #expect(throws: IETF.RFC.`7519`.JWT.Error.self) {
+            _ = try IETF.RFC.`7519`.JWT(
                 header: [Byte](utf8: #"{"alg":"HS256"}"#),
                 payload: [Byte](),
                 signature: [Byte(0x01)]
@@ -239,7 +239,7 @@ extension `RFC_7519.JWT Tests`.Test {
     @Test
     func `create JWT With Empty Signature Allowed`() throws {
 
-        let jwt = try RFC_7519.JWT(
+        let jwt = try IETF.RFC.`7519`.JWT(
             header: [Byte](utf8: #"{"alg":"none"}"#),
             payload: [Byte](utf8: #"{"sub":"test"}"#),
             signature: []
@@ -252,8 +252,8 @@ extension `RFC_7519.JWT Tests`.Test {
     func `jwt Equality`() throws {
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.sig123"
 
-        let jwt1 = try RFC_7519.JWT(token)
-        let jwt2 = try RFC_7519.JWT(token)
+        let jwt1 = try IETF.RFC.`7519`.JWT(token)
+        let jwt2 = try IETF.RFC.`7519`.JWT(token)
 
         #expect(jwt1 == jwt2)
     }
@@ -263,27 +263,27 @@ extension `RFC_7519.JWT Tests`.Test {
         let token1 = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0MSJ9.sig1"
         let token2 = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0MiJ9.sig2"
 
-        let jwt1 = try RFC_7519.JWT(token1)
-        let jwt2 = try RFC_7519.JWT(token2)
+        let jwt1 = try IETF.RFC.`7519`.JWT(token1)
+        let jwt2 = try IETF.RFC.`7519`.JWT(token2)
 
         #expect(jwt1 != jwt2)
     }
 
     @Test
     func `error Descriptions`() {
-        let emptyError = RFC_7519.JWT.Error.empty
+        let emptyError = IETF.RFC.`7519`.JWT.Error.empty
         #expect(emptyError.description.contains("empty"))
 
-        let emptyHeaderError = RFC_7519.JWT.Error.emptyHeader
+        let emptyHeaderError = IETF.RFC.`7519`.JWT.Error.emptyHeader
         #expect(emptyHeaderError.description.contains("header"))
 
-        let emptyPayloadError = RFC_7519.JWT.Error.emptyPayload
+        let emptyPayloadError = IETF.RFC.`7519`.JWT.Error.emptyPayload
         #expect(emptyPayloadError.description.contains("payload"))
 
-        let formatError = RFC_7519.JWT.Error.invalidFormat("test")
+        let formatError = IETF.RFC.`7519`.JWT.Error.invalidFormat("test")
         #expect(formatError.description.contains("format"))
 
-        let base64Error = RFC_7519.JWT.Error.invalidBase64URL("abc", component: "header")
+        let base64Error = IETF.RFC.`7519`.JWT.Error.invalidBase64URL("abc", component: "header")
         #expect(base64Error.description.contains("Base64URL"))
         #expect(base64Error.description.contains("header"))
     }
@@ -292,7 +292,7 @@ extension `RFC_7519.JWT Tests`.Test {
     func `init From String`() throws {
         let token = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl"
 
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
 
         let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))
@@ -303,7 +303,7 @@ extension `RFC_7519.JWT Tests`.Test {
         let fullString = "prefix:eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0In0.c2lnbmF0dXJl:suffix"
         let token = fullString.dropFirst(7).dropLast(7)
 
-        let jwt = try RFC_7519.JWT(token)
+        let jwt = try IETF.RFC.`7519`.JWT(token)
 
         let headerString = String(decoding: jwt.header, as: UTF8.self)
         #expect(headerString.contains("HS256"))

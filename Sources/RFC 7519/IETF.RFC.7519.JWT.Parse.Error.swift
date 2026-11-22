@@ -1,4 +1,4 @@
-extension RFC_7519.JWT.Parse {
+extension IETF.RFC.`7519`.JWT.Parse {
 
     public typealias Error = __JWTParserError
 }

@@ -1,6 +1,6 @@
 import Parser
 
-extension RFC_7519.JWT.Parse {
+extension IETF.RFC.`7519`.JWT.Parse {
     public struct Output: Sendable {
         public let header: Input
         public let payload: Input

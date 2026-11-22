@@ -3,16 +3,16 @@ import Testing
 
 @testable import RFC_7519
 
-enum `RFC_7519.JWT Tests` {}
+enum `IETF.RFC.7519.JWT Tests` {}
 
-extension `RFC_7519.JWT Tests` {
+extension `IETF.RFC.7519.JWT Tests` {
     @Suite
     struct Test {
 
         @Test
         func `ascii Verb Output Equals Binary Witness Output For The Base64URL Encode Path`() throws {
 
-            let jwt = try RFC_7519.JWT(
+            let jwt = try IETF.RFC.`7519`.JWT(
                 header: [Byte(0xFF), Byte(0xFF), Byte(0xBF)],
                 payload: [Byte(0xFB), Byte(0xF0)],
                 signature: [Byte(0xFF), Byte(0xEF), Byte(0xFB)]
@@ -21,7 +21,7 @@ extension `RFC_7519.JWT Tests` {
             let viaASCII: [Byte] = jwt.serialized
 
             var viaBinary: [Byte] = []
-            RFC_7519.JWT.serialize(jwt, into: &viaBinary)
+            IETF.RFC.`7519`.JWT.serialize(jwt, into: &viaBinary)
 
             #expect(viaASCII == viaBinary)
 

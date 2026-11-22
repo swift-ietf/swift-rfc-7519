@@ -1,4 +1,4 @@
-extension RFC_7519.JWT {
+extension IETF.RFC.`7519`.JWT {
 
     public enum Error: Swift::Error, Sendable, Equatable, CustomStringConvertible {
         case empty
@@ -9,7 +9,7 @@ extension RFC_7519.JWT {
     }
 }
 
-extension RFC_7519.JWT.Error {
+extension IETF.RFC.`7519`.JWT.Error {
     public var description: String {
         switch self {
         case .empty:

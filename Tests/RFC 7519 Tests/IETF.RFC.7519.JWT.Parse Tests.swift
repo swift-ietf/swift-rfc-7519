@@ -5,7 +5,7 @@ import Testing
 
 @testable import RFC_7519
 
-extension `RFC_7519.JWT Tests` {
+extension `IETF.RFC.7519.JWT Tests` {
 
     struct Bytes: Sendable {
         let bytes: [UInt8]
@@ -28,7 +28,7 @@ extension `RFC_7519.JWT Tests` {
     }
 }
 
-extension `RFC_7519.JWT Tests`.Bytes: Collection.`Protocol` {
+extension `IETF.RFC.7519.JWT Tests`.Bytes: Collection.`Protocol` {
 
     typealias Element = UInt8
 
@@ -46,22 +46,22 @@ extension `RFC_7519.JWT Tests`.Bytes: Collection.`Protocol` {
     }
 }
 
-extension `RFC_7519.JWT Tests`.Bytes: Collection.Slice.`Protocol` {
+extension `IETF.RFC.7519.JWT Tests`.Bytes: Collection.Slice.`Protocol` {
 
     subscript(bounds: Range<Int>) -> Self {
         Self(bytes: bytes, start: bounds.lowerBound, end: bounds.upperBound)
     }
 }
 
-extension `RFC_7519.JWT Tests`.Test {
+extension `IETF.RFC.7519.JWT Tests`.Test {
 
-    private typealias Bytes = `RFC_7519.JWT Tests`.Bytes
+    private typealias Bytes = `IETF.RFC.7519.JWT Tests`.Bytes
 
     private func byteParse(
         _ token: String
-    ) throws(RFC_7519.JWT.Parse<Bytes>.Error) -> RFC_7519.JWT.Parse<Bytes>.Output {
+    ) throws(IETF.RFC.`7519`.JWT.Parse<Bytes>.Error) -> IETF.RFC.`7519`.JWT.Parse<Bytes>.Output {
         var input = Bytes(token)
-        return try RFC_7519.JWT.Parse<Bytes>().parse(&input)
+        return try IETF.RFC.`7519`.JWT.Parse<Bytes>().parse(&input)
     }
 
     @Test
@@ -82,7 +82,7 @@ extension `RFC_7519.JWT Tests`.Test {
 
     @Test
     func `byte Parser Refuses A Fourth Segment`() {
-        #expect(throws: RFC_7519.JWT.Parse<Bytes>.Error.unexpectedPeriod) {
+        #expect(throws: IETF.RFC.`7519`.JWT.Parse<Bytes>.Error.unexpectedPeriod) {
             _ = try byteParse("aGk.aGk.AQID.AQID")
         }
     }
@@ -100,15 +100,15 @@ extension `RFC_7519.JWT Tests`.Test {
     ])
     func `byte Parser And Text Parser Agree On Segment Structure`(token: String) {
         let byteAccepts: Bool
-        do throws(RFC_7519.JWT.Parse<Bytes>.Error) {
+        do throws(IETF.RFC.`7519`.JWT.Parse<Bytes>.Error) {
             _ = try byteParse(token)
             byteAccepts = true
         } catch {
             byteAccepts = false
         }
         let textAccepts: Bool
-        do throws(RFC_7519.JWT.Error) {
-            _ = try RFC_7519.JWT(token)
+        do throws(IETF.RFC.`7519`.JWT.Error) {
+            _ = try IETF.RFC.`7519`.JWT(token)
             textAccepts = true
         } catch {
             textAccepts = false

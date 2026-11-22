@@ -1,7 +1,7 @@
 public import ASCII
 public import Binary
 
-extension RFC_7519 {
+extension IETF.RFC.`7519` {
 
     public struct JWT: Sendable, Codable {
 
@@ -42,8 +42,8 @@ extension RFC_7519 {
                 throw Error.emptyPayload
             }
 
-            let headerBase64URL = RFC_4648.Base64.URL.encode(header).map(\.byte)
-            let payloadBase64URL = RFC_4648.Base64.URL.encode(payload).map(\.byte)
+            let headerBase64URL = IETF.RFC.`4648`.Base64.URL.encode(header).map(\.byte)
+            let payloadBase64URL = IETF.RFC.`4648`.Base64.URL.encode(payload).map(\.byte)
 
             self.init(
 
@@ -59,7 +59,7 @@ extension RFC_7519 {
     }
 }
 
-extension RFC_7519.JWT {
+extension IETF.RFC.`7519`.JWT {
 
     public var signingInput: [Byte] {
         var result: [Byte] = []
@@ -72,7 +72,7 @@ extension RFC_7519.JWT {
     }
 }
 
-extension RFC_7519.JWT: ASCII.Parseable {
+extension IETF.RFC.`7519`.JWT: ASCII.Parseable {
 
     public init(_ string: some StringProtocol) throws(Error) {
         try self.init(ascii: string.utf8.map(Byte.init(bitPattern:)))
@@ -116,7 +116,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         guard !headerBase64URLCodes.isEmpty else {
             throw Error.emptyHeader
         }
-        guard let header = RFC_4648.Base64.URL.decode(headerBase64URLCodes) else {
+        guard let header = IETF.RFC.`4648`.Base64.URL.decode(headerBase64URLCodes) else {
             throw Error.invalidBase64URL(
                 String(ascii: headerBase64URLCodes),
                 component: "header"
@@ -126,7 +126,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         guard !payloadBase64URLCodes.isEmpty else {
             throw Error.emptyPayload
         }
-        guard let payload = RFC_4648.Base64.URL.decode(payloadBase64URLCodes) else {
+        guard let payload = IETF.RFC.`4648`.Base64.URL.decode(payloadBase64URLCodes) else {
             throw Error.invalidBase64URL(
                 String(ascii: payloadBase64URLCodes),
                 component: "payload"
@@ -137,7 +137,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
         if signatureBase64URLCodes.isEmpty {
             signature = []
         } else {
-            guard let decoded = RFC_4648.Base64.URL.decode(signatureBase64URLCodes) else {
+            guard let decoded = IETF.RFC.`4648`.Base64.URL.decode(signatureBase64URLCodes) else {
                 throw Error.invalidBase64URL(
                     String(ascii: signatureBase64URLCodes),
                     component: "signature"
@@ -158,7 +158,7 @@ extension RFC_7519.JWT: ASCII.Parseable {
     }
 }
 
-extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
+extension IETF.RFC.`7519`.JWT: ASCII.Serializable, Binary.Serializable {
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
         _ value: Self,
@@ -169,7 +169,7 @@ extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
         buffer.append(contentsOf: value.payloadBase64URL.map { ASCII.Code(unchecked: $0) })
         buffer.append(ASCII.Code.period)
 
-        RFC_4648.Base64.URL.encode(value.signature, into: &buffer, padding: false)
+        IETF.RFC.`4648`.Base64.URL.encode(value.signature, into: &buffer, padding: false)
     }
 
     public static func serialize<Buffer: RangeReplaceableCollection>(
@@ -190,12 +190,12 @@ extension RFC_7519.JWT: ASCII.Serializable, Binary.Serializable {
         buffer.append(ASCII.Code.period.byte)
 
         var signatureEncoded: [ASCII.Code] = []
-        RFC_4648.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
+        IETF.RFC.`4648`.Base64.URL.encode(jwt.signature, into: &signatureEncoded, padding: false)
         buffer.append(contentsOf: signatureEncoded.map(\.byte))
     }
 }
 
-extension RFC_7519.JWT: Swift::RawRepresentable {
+extension IETF.RFC.`7519`.JWT: Swift::RawRepresentable {
 
     public var rawValue: String {
         String(decoding: serialized, as: UTF8.self)
@@ -210,14 +210,14 @@ extension RFC_7519.JWT: Swift::RawRepresentable {
     }
 }
 
-extension RFC_7519.JWT: CustomStringConvertible {
+extension IETF.RFC.`7519`.JWT: CustomStringConvertible {
 
     public var description: String {
         String(decoding: serialized, as: UTF8.self)
     }
 }
 
-extension RFC_7519.JWT: Hashable {
+extension IETF.RFC.`7519`.JWT: Hashable {
     public func hash(into hasher: inout Hasher) {
         hasher.combine(header)
         hasher.combine(payload)
